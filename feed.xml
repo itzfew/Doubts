@@ -27,5 +27,12 @@
 <media:content medium="image" url="https://cdn.cnn.com/cnnnext/dam/assets/230418164538-02-dominion-fox-trial-settlement-0418-super-169.jpg" height="619" width="1100" type="image/jpeg"/>
 	</media:group>
 	  </item>
+	  <item>
+  <title><![CDATA[<h1>Sample Title</h1>]]></title>
+  <description><![CDATA[<p>This is a sample description.</p>]]></description>
+  <media:group>
+    <media:content medium="image" url="https://cdn.cnn.com/cnnnext/dam/assets/230418164538-02-dominion-fox-trial-settlement-0418-super-169.jpg" height="619" width="1100" type="image/jpeg"/>
+  </media:group>
+</item>
   </channel>
 </rss>
