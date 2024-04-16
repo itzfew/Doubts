@@ -2,31 +2,35 @@
 <rss version="2.0">
   <channel>
     <title>Student Feed</title>
-    <link>https://ind-edu.pages.dev</link>
+    <link>https://example.com</link>
     <description>Feed for students</description>
     <item>
       <title>CREATE your own Planner</title>
       <link>go:plan</link>
       <description>Create your own Planner</description>
       <image>https://i0.wp.com/www.printablesandinspirations.com/wp-content/uploads/2023/06/weekly-planner-students.png?ssl=1</image>
+      <reference>plan</reference>
     </item>
     <item>
       <title>Create your own Countdown Timer</title>
       <link>go:countdown</link>
       <description>Create your own Countdown Timer</description>
       <image>https://play-lh.googleusercontent.com/yIz-0Sdm9X7sLc232Idkeat05nJjvGPtqZuj-vJuclb54rI5fkOtd6m0PKHjIXje1-sZ</image>
+      <reference>countdown</reference>
     </item>
     <item>
       <title>Create Your Own own Daily Time table</title>
       <link>go:table</link>
       <description>Create Your Own own Daily Time table</description>
       <image>https://www.wikihow.com/images/thumb/a/a0/Make-a-Study-Timetable-Step-9-Version-2.jpg/v4-460px-Make-a-Study-Timetable-Step-9-Version-2.jpg.webp</image>
+      <reference>table</reference>
     </item>
     <item>
       <title>Make challenge to remain consistent, by challenging daily streaks</title>
       <link>go:streak</link>
       <description>Make challenge to remain consistent, by challenging daily streaks</description>
       <image>https://i.ibb.co/HpsKWX7/Screenshot-2022-09-12-at-10-54-48.png</image>
+      <reference>streak</reference>
     </item>
   </channel>
 </rss>
