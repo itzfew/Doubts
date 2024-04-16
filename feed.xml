@@ -20,19 +20,6 @@
       <title><![CDATA[<h1>Make challenge to remain consistent, by challenging daily streaks</h1>]]></title>
       <pubDate>Thu, 17 Apr 2014 21:07:30 +0000</pubDate>
     </item>
-	  <item>
-  <title><![CDATA[<h1>The Consequences of Tiananmen</h1>]]></title>
-  <pubDate>Wed, 04 Jun 2014 21:55:31 +0000</pubDate>
-<media:group>
-<media:content medium="image" url="https://cdn.cnn.com/cnnnext/dam/assets/230418164538-02-dominion-fox-trial-settlement-0418-super-169.jpg" height="619" width="1100" type="image/jpeg"/>
-	</media:group>
-	  </item>
-	  <item>
-  <title><![CDATA[<h1>Sample Title</h1>]]></title>
-  <description><![CDATA[<p>This is a sample description.</p>]]></description>
-  <media:group>
-    <media:content medium="image" url="https://cdn.cnn.com/cnnnext/dam/assets/230418164538-02-dominion-fox-trial-settlement-0418-super-169.jpg" height="619" width="1100" type="image/jpeg"/>
-  </media:group>
-</item>
+	
   </channel>
 </rss>
