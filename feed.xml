@@ -2,26 +2,31 @@
 <rss version="2.0">
   <channel>
     <title>Student Feed</title>
-    <link>https://example.com</link>
+    <link>https://ind-edu.pages.dev</link>
     <description>Feed for students</description>
     <item>
-      <title>Item Title 1</title>
-      <link>https://example.com/item1</link>
-      <description>Description of item 1</description>
-      <image>https://www.appcreator24.com/android-app-creator/android-creator.png</image>
+      <title>CREATE your own Planner</title>
+      <link>go:plan</link>
+      <description>Create your own Planner</description>
+      <image>https://i0.wp.com/www.printablesandinspirations.com/wp-content/uploads/2023/06/weekly-planner-students.png?ssl=1</image>
     </item>
     <item>
-      <title>Item Tithhle 1</title>
-      <link>https://example.com/item1</link>
-      <description>Description of item 1</description>
-      <image>https://www.appcreator24.com/android-app-creator/android-creator.png</image>
+      <title>Create your own Countdown Timer</title>
+      <link>go:countdown</link>
+      <description>Create your own Countdown Timer</description>
+      <image>https://play-lh.googleusercontent.com/yIz-0Sdm9X7sLc232Idkeat05nJjvGPtqZuj-vJuclb54rI5fkOtd6m0PKHjIXje1-sZ</image>
     </item>
     <item>
-      <title>Item Title 2</title>
-      <link>https://example.com/item2</link>
-      <description>Description of item 2</description>
-      <image>https://example.com/image2.jpg</image>
+      <title>Create Your Own own Daily Time table</title>
+      <link>go:table</link>
+      <description>Create Your Own own Daily Time table</description>
+      <image>https://www.wikihow.com/images/thumb/a/a0/Make-a-Study-Timetable-Step-9-Version-2.jpg/v4-460px-Make-a-Study-Timetable-Step-9-Version-2.jpg.webp</image>
     </item>
-    <!-- Add more <item> elements for additional entries -->
+    <item>
+      <title>Make challenge to remain consistent, by challenging daily streaks</title>
+      <link>go:streak</link>
+      <description>Make challenge to remain consistent, by challenging daily streaks</description>
+      <image>https://i.ibb.co/HpsKWX7/Screenshot-2022-09-12-at-10-54-48.png</image>
+    </item>
   </channel>
 </rss>
