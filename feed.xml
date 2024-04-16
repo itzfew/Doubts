@@ -8,13 +8,13 @@
       <title>Item Title 1</title>
       <link>https://example.com/item1</link>
       <description>Description of item 1</description>
-      <pubDate>Publication date of item 1</pubDate>
+      <image>https://www.appcreator24.com/android-app-creator/android-creator.png</image>
     </item>
     <item>
       <title>Item Title 2</title>
       <link>https://example.com/item2</link>
       <description>Description of item 2</description>
-      <pubDate>Publication date of item 2</pubDate>
+      <image>https://example.com/image2.jpg</image>
     </item>
     <!-- Add more <item> elements for additional entries -->
   </channel>
