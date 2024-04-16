@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Your RSS Feed Title</title>
+    <link>Link to your website or repository</link>
+    <description>Description of your RSS feed</description>
+    <item>
+      <title>Item Title 1</title>
+      <link>Link to item 1</link>
+      <description>Description of item 1</description>
+      <pubDate>Publication date of item 1</pubDate>
+    </item>
+    <!-- Add more <item> elements for additional entries -->
+  </channel>
+</rss>
