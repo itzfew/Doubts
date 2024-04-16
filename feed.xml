@@ -23,7 +23,9 @@
 	  <item>
   <title><![CDATA[<h1>The Consequences of Tiananmen</h1>]]></title>
   <pubDate>Wed, 04 Jun 2014 21:55:31 +0000</pubDate>
-  <image>https://1.gravatar.com/avatar/44fdb8264513b4a337b3be7bfacb146332d6e11a341dd79eaa558e01b1e02a85?s=96&amp;d=identicon&amp;r=G</image>
-</item>
+<media:group>
+<media:content medium="image" url="https://cdn.cnn.com/cnnnext/dam/assets/230418164538-02-dominion-fox-trial-settlement-0418-super-169.jpg" height="619" width="1100" type="image/jpeg"/>
+	</media:group>
+	  </item>
   </channel>
 </rss>
