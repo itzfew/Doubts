@@ -6,7 +6,7 @@
     <title>Quiz App - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body id="dashboard">
     <div class="container">
         <h1>Dashboard</h1>
         <div id="exam-selection">
@@ -26,11 +26,15 @@
             <div id="feedback"></div>
             <button id="next-question" style="display: none;">Next Question</button>
         </div>
+        <div id="profile">
+            <h2>Profile</h2>
+            <button id="view-profile">View Profile</button>
+            <button id="logout">Logout</button>
+        </div>
         <div id="leaderboard">
             <h2>Leaderboard</h2>
             <ul id="leaderboard-list"></ul>
         </div>
-        <button id="logout">Logout</button>
     </div>
     <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-auth.js"></script>
