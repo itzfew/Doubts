@@ -1,8 +1,7 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.12.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.12.0/firebase-firestore.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile, deleteUser } from "https://www.gstatic.com/firebasejs/9.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, addDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.12.0/firebase-firestore.js";
 
-// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyA_dNTrWIo8fSTub-J4uh_Yjf4Fr_qay3c",
     authDomain: "ind-edu.firebaseapp.com",
@@ -34,6 +33,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const leaderboardList = document.getElementById('leaderboard-list');
     const examListAdmin = document.getElementById('exam-list-admin');
     const userListAdmin = document.getElementById('user-list-admin');
+    const profileForm = document.getElementById('profile-form');
+    const profileUsername = document.getElementById('profile-username');
+    const profileEmail = document.getElementById('profile-email');
+    const viewProfileButton = document.getElementById('view-profile');
+    const deleteAccountButton = document.getElementById('delete-account');
+    const backToDashboardButton = document.getElementById('back-to-dashboard');
 
     // Show/Hide Forms
     showSignup.addEventListener('click', () => {
@@ -100,6 +105,52 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Profile Management
+    viewProfileButton.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (user) {
+            profileUsername.value = user.displayName || '';
+            profileEmail.value = user.email || '';
+            document.getElementById('profile').style.display = 'block';
+        }
+    });
+
+    profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                await updateProfile(user, {
+                    displayName: profileUsername.value
+                });
+                await updateDoc(doc(db, 'users', user.uid), {
+                    email: profileEmail.value
+                });
+                alert('Profile updated!');
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+    });
+
+    deleteAccountButton.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                await deleteUser(user);
+                await deleteDoc(doc(db, 'users', user.uid));
+                alert('Account deleted!');
+                window.location.href = 'index.html';
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+    });
+
+    backToDashboardButton.addEventListener('click', () => {
+        window.location.href = 'dashboard.html';
+    });
+
     // Quiz Dashboard
     async function loadExams() {
         const examsRef = collection(db, 'exams');
@@ -157,37 +208,23 @@ document.addEventListener('DOMContentLoaded', function () {
         question.options.forEach((option, index) => {
             const button = document.createElement('button');
             button.textContent = option;
-            button.addEventListener('click', () => {
-                checkAnswer(question, option, index);
-            });
+            button.addEventListener('click', () => checkAnswer(question, option));
             questionContainer.appendChild(button);
         });
 
-        const nextButton = document.getElementById('next-question');
-        nextButton.style.display = 'block';
-        nextButton.addEventListener('click', () => {
-            showQuestion(questions, currentIndex + 1, timePerQuestion, numQuestions);
-        });
+        document.getElementById('next-question').style.display = 'none';
     }
 
-    function checkAnswer(question, selectedOption, index) {
-        const isCorrect = question.correctOption === String.fromCharCode(65 + index);
-        feedback.innerHTML = `<p class="${isCorrect ? 'correct' : 'incorrect'}">${isCorrect ? 'Correct!' : 'Incorrect!'} The correct answer is ${question.options[question.correctOption.charCodeAt(0) - 65]}</p>`;
+    function checkAnswer(question, selectedOption) {
+        const correct = question.correctOption === selectedOption;
+        feedback.innerHTML = `<p class="${correct ? 'correct' : 'incorrect'}">${correct ? 'Correct!' : 'Incorrect!'}</p>`;
+        feedback.innerHTML += `<p>Correct Answer: ${question.options[question.correctOption]}</p>`;
+
+        document.getElementById('next-question').style.display = 'block';
     }
 
-    // Admin Dashboard
-    document.getElementById('create-exam-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const examName = document.getElementById('exam-name').value;
-        try {
-            await addDoc(collection(db, 'exams'), { name: examName });
-            loadAdminExams();
-        } catch (error) {
-            alert(error.message);
-        }
-    });
-
-    async function loadAdminExams() {
+    // Admin Dashboard Functions
+    async function loadExamsAdmin() {
         const examsRef = collection(db, 'exams');
         const examSnapshot = await getDocs(examsRef);
         examListAdmin.innerHTML = '';
@@ -196,61 +233,82 @@ document.addEventListener('DOMContentLoaded', function () {
             const li = document.createElement('li');
             li.textContent = exam.name;
             li.addEventListener('click', () => {
-                showQuestionManagement(doc.id);
+                manageQuestions(doc.id);
             });
             examListAdmin.appendChild(li);
         });
     }
 
-    function showQuestionManagement(examId) {
-        document.getElementById('question-management').style.display = 'block';
-        document.getElementById('add-question').addEventListener('click', async () => {
-            const questionText = document.getElementById('question-text').value;
-            const options = [
-                document.getElementById('option-a').value,
-                document.getElementById('option-b').value,
-                document.getElementById('option-c').value,
-                document.getElementById('option-d').value,
-            ];
-            const correctOption = document.getElementById('correct-option').value;
-
-            try {
-                await addDoc(collection(db, 'exams', examId, 'questions'), {
-                    text: questionText,
-                    options: options,
-                    correctOption: correctOption
-                });
-                alert('Question added!');
-            } catch (error) {
-                alert(error.message);
-            }
-        });
+    async function manageQuestions(examId) {
+        const questionsRef = collection(db, 'exams', examId, 'questions');
+        const questionSnapshot = await getDocs(questionsRef);
+        const questionList = document.getElementById('question-management');
+        questionList.style.display = 'block';
     }
 
-    async function loadUserList() {
+    document.getElementById('create-exam-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const examName = document.getElementById('exam-name').value;
+        try {
+            await addDoc(collection(db, 'exams'), { name: examName });
+            alert('Exam created!');
+            loadExamsAdmin();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    document.getElementById('add-question').addEventListener('click', async () => {
+        const examId = document.getElementById('exam-id').value;
+        const questionText = document.getElementById('question-text').value;
+        const options = [
+            document.getElementById('option-a').value,
+            document.getElementById('option-b').value,
+            document.getElementById('option-c').value,
+            document.getElementById('option-d').value
+        ];
+        const correctOption = document.getElementById('correct-option').value;
+
+        try {
+            await addDoc(collection(db, 'exams', examId, 'questions'), {
+                text: questionText,
+                options,
+                correctOption
+            });
+            alert('Question added!');
+            manageQuestions(examId);
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    document.getElementById('delete-question').addEventListener('click', async () => {
+        const examId = document.getElementById('exam-id').value;
+        const questionId = document.getElementById('question-id').value;
+
+        try {
+            await deleteDoc(doc(db, 'exams', examId, 'questions', questionId));
+            alert('Question deleted!');
+            manageQuestions(examId);
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    async function loadUserListAdmin() {
         const usersRef = collection(db, 'users');
         const userSnapshot = await getDocs(usersRef);
         userListAdmin.innerHTML = '';
         userSnapshot.forEach((doc) => {
             const user = doc.data();
             const li = document.createElement('li');
-            li.textContent = `Username: ${user.username}, Email: ${user.email}, Score: ${user.score}`;
+            li.textContent = `${user.username} - ${user.email} - ${user.score}`;
             userListAdmin.appendChild(li);
         });
     }
 
-    // Initialize Pages
-    if (document.body.id === 'dashboard') {
-        loadExams();
-    } else if (document.body.id === 'admin-dashboard') {
-        loadAdminExams();
-        loadUserList();
-    }
-
-    // Auth State Listener
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            window.location.href = 'index.html';
-        }
-    });
+    // Load the initial data
+    loadExams();
+    loadExamsAdmin();
+    loadUserListAdmin();
 });
