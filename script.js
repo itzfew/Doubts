@@ -9,6 +9,7 @@ const submitButton = document.getElementById('submit-button');
 const pdfViewer = document.getElementById('pdf-viewer');
 const examContainer = document.getElementById('exam-container');
 const examForm = document.getElementById('exam-form');
+const questionsContainer = document.getElementById('questions-container');
 
 // Authentication handler
 auth.onAuthStateChanged(user => {
@@ -54,37 +55,72 @@ startButton.addEventListener('click', () => {
     examContainer.style.display = 'block';
     examForm.style.display = 'none';
 
-    // Load questions from Firestore or other data sources (this part is not implemented)
-    // e.g., loadQuestions();
+    // Load questions (stub implementation)
+    loadQuestions();
   } else {
     alert('Please fill all fields and upload a PDF.');
   }
 });
 
+// Load Questions (example stub)
+function loadQuestions() {
+  // Replace with actual Firestore query or PDF parsing
+  // Example static questions for demonstration
+  const questions = [
+    { id: 1, text: "Question 1", options: ["Option A", "Option B", "Option C"] },
+    { id: 2, text: "Question 2", options: ["Option A", "Option B", "Option C"] }
+  ];
+
+  questionsContainer.innerHTML = ''; // Clear previous questions
+
+  questions.forEach(question => {
+    const questionDiv = document.createElement('div');
+    questionDiv.classList.add('question');
+    questionDiv.innerHTML = `
+      <p>${question.text}</p>
+      ${question.options.map((option, index) => `
+        <label>
+          <input type="radio" name="question-${question.id}" value="${option}">
+          ${option}
+        </label>
+      `).join('<br>')}
+    `;
+    questionsContainer.appendChild(questionDiv);
+  });
+}
+
 // Submit Exam
 submitButton.addEventListener('click', () => {
-  // Collect selected options (example placeholder logic)
+  if (!auth.currentUser) {
+    alert('User is not authenticated. Please sign in.');
+    return;
+  }
+
   const selectedOptions = {}; // Collect user's answers
+  const questionElems = document.querySelectorAll('.question');
+
+  questionElems.forEach(questionElem => {
+    const questionId = questionElem.querySelector('input').name.split('-')[1];
+    const selectedOption = document.querySelector(`input[name="question-${questionId}"]:checked`);
+
+    if (selectedOption) {
+      selectedOptions[questionId] = selectedOption.value;
+    }
+  });
 
   // Save exam results to Firestore
-  if (auth.currentUser) {
-    const userId = auth.currentUser.uid;
-    db.collection('examResults').add({
-      userId: userId,
-      examName: examNameInput.value,
-      subjectName: subjectNameInput.value,
-      answers: selectedOptions,
-      timestamp: new Date()
-    }).then(() => {
-      alert('Exam submitted successfully!');
-      // Display results (this part is not implemented)
-      // e.g., displayResults();
-    }).catch(error => {
-      console.error("Error submitting exam:", error);
-    });
-  } else {
-    alert('User is not authenticated. Please sign in.');
-  }
+  db.collection('examResults').add({
+    userId: auth.currentUser.uid,
+    examName: examNameInput.value,
+    subjectName: subjectNameInput.value,
+    answers: selectedOptions,
+    timestamp: new Date()
+  }).then(() => {
+    alert('Exam submitted successfully!');
+    // Optionally display results here
+  }).catch(error => {
+    console.error("Error submitting exam:", error);
+  });
 });
 
 // Example sign-in button (replace with your actual button)
