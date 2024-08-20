@@ -3,15 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Post Details</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f4f4f4;
+        }
+
+        header {
+            background: #333;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .post-detail {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .comments-section {
+            border-top: 1px solid #ddd;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+
+        .comment {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1em;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            nav {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav a {
+                margin: 5px 0;
+            }
+
+            main {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1 id="post-title"></h1>
-    <div id="post-content"></div>
+    <header>
+        <h1>Blog Platform</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="signup.html">Sign Up</a>
+            <a href="admin.html">Admin Login</a>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <div id="post-detail" class="post-detail"></div>
+        <section class="comments-section">
+            <h2>Comments</h2>
+            <form id="comment-form">
+                <div class="form-group">
+                    <label for="comment-content">Add a Comment:</label>
+                    <textarea id="comment-content" required></textarea>
+                </div>
+                <button type="submit">Submit Comment</button>
+            </form>
+            <div id="comments-list"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Blog Platform. All rights reserved.</p>
+    </footer>
 
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-firestore.js"></script>
-    <script src="script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_dNTrWIo8fSTub-J4uh_Yjf4Fr_qay3c",
+            authDomain: "ind-edu.firebaseapp.com",
+            databaseURL: "https://ind-edu-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ind-edu",
+            storageBucket: "ind-edu.appspot.com",
+            messagingSenderId: "60520122150",
+            appId: "1:60520122150:web:0205f57353dae6cfc723e7",
+            measurementId: "G-XLZRGM88T9"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const firestore = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Load Post Details
+        async function loadPostDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+
+            if (!postId) {
+                alert('Post ID is missing.');
+                return;
+            }
+
+            const postRef = firestore.collection('posts').doc(postId);
+            const postDoc = await postRef.get();
+
+            if (!postDoc.exists) {
+                alert('Post not found.');
+                return;
+            }
+
+            const post = postDoc.data();
+            document.getElementById('post-detail').innerHTML = `
+                <h2>${post.title}</h2>
+                <p>${post.content}</p>
+            `;
+
+            loadComments(postId);
+        }
+
+        // Load Comments
+        async function loadComments(postId) {
+            const commentsList = document.getElementById('comments-list');
+            const commentsSnapshot = await firestore.collection('posts').doc(postId).collection('comments').get();
+
+            commentsList.innerHTML = ''; // Clear existing comments
+
+            commentsSnapshot.forEach(doc => {
+                const comment = doc.data();
+                const commentElement = document.createElement('div');
+                commentElement.classList.add('comment');
+                commentElement.innerHTML = `
+                    <p><strong>${comment.user}</strong>: ${comment.content}</p>
+                `;
+                commentsList.appendChild(commentElement);
+            });
+        }
+
+        // Handle Comment Submission
+        document.getElementById('comment-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+            const commentContent = document.getElementById('comment-content').value;
+            const user = auth.currentUser ? auth.currentUser.email : 'Anonymous';
+
+            try {
+                await firestore.collection('posts').doc(postId).collection('comments').add({
+                    user,
+                    content: commentContent
+                });
+                document.getElementById('comment-form').reset();
+                loadComments(postId);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Initial Load
+        loadPostDetails();
+    </script>
 </body>
 </html>
