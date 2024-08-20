@@ -1,4 +1,4 @@
-import { db, auth } from './firebase.js'; // Import Firebase instances
+ import { db, auth } from './firebase.js'; // Import Firebase instances
 
 // DOM elements
 const examNameInput = document.getElementById('exam-name');
