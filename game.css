@@ -1,82 +1,111 @@
-.choice-container {
-  display: flex;
-  margin-bottom: 0.5rem;
-  width: 100%;
-  font-size: 1.8rem;
-  border: 0.1rem solid rgb(86, 165, 235, 0.25);
-  background-color: white;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #pdf-container {
+            max-width: 100%;
+            overflow-y: scroll;
+            height: 80vh; /* Adjust as needed */
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        canvas {
+            display: block;
+            margin: 10px 0;
+            border: 1px solid black;
+        }
+        #controls {
+            margin: 20px 0;
+        }
+        #prev, #next {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: 1px solid #ccc;
+            background: #f0f0f0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF Viewer</h1>
+    <input type="file" id="file-input" accept="application/pdf"/>
+    <div id="controls">
+        <button id="prev">Previous</button>
+        <button id="next">Next</button>
+    </div>
+    <div id="pdf-container"></div>
 
-.choice-container:hover {
-  cursor: pointer;
-  box-shadow: 0 0.4rem 1.4rem 0 rgba(86, 185, 235, 0.5);
-  transform: translateY(-0.1rem);
-  transition: transform 150ms;
-}
+    <!-- Load PDF.js from the official CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js"></script>
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const pdfContainer = document.getElementById('pdf-container');
+        const prevButton = document.getElementById('prev');
+        const nextButton = document.getElementById('next');
+        let pdfDoc = null;
+        let pageNum = 1;
+        const scale = 1.5;
 
-.choice-prefix {
-  padding: 1.5rem 2.5rem;
-  background-color: #56a5eb;
-  color: white;
-}
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js';
 
-.choice-text {
-  padding: 1.5rem;
-  width: 100%;
-}
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const fileReader = new FileReader();
+                fileReader.onload = function() {
+                    const arrayBuffer = this.result;
+                    pdfjsLib.getDocument({ data: arrayBuffer }).promise.then(function(pdf) {
+                        pdfDoc = pdf;
+                        pageNum = 1;
+                        renderPage(pageNum);
+                    }).catch(function(error) {
+                        console.error('Error loading PDF: ', error);
+                    });
+                };
+                fileReader.readAsArrayBuffer(file);
+            }
+        });
 
-.correct {
-  background-color: #28a745;
-}
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const canvasContext = canvas.getContext('2d');
 
-.incorrect {
-  background-color: #dc3545;
-}
+                pdfContainer.innerHTML = ''; // Clear previous content
+                pdfContainer.appendChild(canvas);
 
-/* HUD */
+                const renderContext = {
+                    canvasContext: canvasContext,
+                    viewport: viewport
+                };
+                page.render(renderContext);
+            }).catch(function(error) {
+                console.error('Error rendering page: ', error);
+            });
+        }
 
-#hud {
-  display: flex;
-  justify-content: space-between;
-}
+        prevButton.addEventListener('click', function() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            renderPage(pageNum);
+        });
 
-.hud-prefix {
-  text-align: center;
-  font-size: 2rem;
-}
-
-.hud-main-text {
-  text-align: center;
-}
-
-#progressBar {
-  width: 20rem;
-  height: 4rem;
-  border: 0.3rem solid #56a5eb;
-  margin-top: 1.5rem;
-}
-
-#progressBarFull {
-  height: 3.6rem;
-  background-color: #56a5eb;
-  width: 0%;
-}
-
-/* LOADER */
-#loader {
-  border: 1.6rem solid white;
-  border-radius: 50%;
-  border-top: 1.6rem solid #56a5eb;
-  width: 12rem;
-  height: 12rem;
-  animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
+        nextButton.addEventListener('click', function() {
+            if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            renderPage(pageNum);
+        });
+    </script>
+</body>
+</html>
