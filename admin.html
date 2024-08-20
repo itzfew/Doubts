@@ -3,20 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Admin Login</h1>
-    <form id="admin-login-form">
-        <input type="email" id="admin-email" placeholder="Email" required>
-        <input type="password" id="admin-password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="admin-signup.html">Sign Up</a></p>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="admin.html">Dashboard</a>
+            <a href="logout.html">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="post-management">
+            <h2>Manage Posts</h2>
+            <button id="add-post-button">Add New Post</button>
+            <div id="posts-management-list" class="posts-list"></div>
+        </section>
+        <section id="user-management">
+            <h2>Manage Users</h2>
+            <!-- User management options here -->
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Blog Platform. All rights reserved.</p>
+    </footer>
 
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
-    <script src="script.js"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
