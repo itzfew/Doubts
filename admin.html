@@ -3,44 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz App - Admin Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body id="admin-dashboard">
-    <div class="container">
-        <h1>Admin Dashboard</h1>
-        <div id="exam-management">
-            <h2>Create or Manage Exams</h2>
-            <form id="create-exam-form">
-                <input type="text" id="exam-name" placeholder="Exam Name" required>
-                <button type="submit">Create Exam</button>
-            </form>
-            <ul id="exam-list-admin"></ul>
-        </div>
-        <div id="question-management" style="display: none;">
-            <h2>Add or Remove Questions</h2>
-            <input type="text" id="question-text" placeholder="Question Text" required>
-            <input type="text" id="option-a" placeholder="Option A" required>
-            <input type="text" id="option-b" placeholder="Option B" required>
-            <input type="text" id="option-c" placeholder="Option C" required>
-            <input type="text" id="option-d" placeholder="Option D" required>
-            <select id="correct-option">
-                <option value="A">Option A</option>
-                <option value="B">Option B</option>
-                <option value="C">Option C</option>
-                <option value="D">Option D</option>
-            </select>
-            <button id="add-question">Add Question</button>
-            <button id="delete-question">Delete Question</button>
-        </div>
-        <div id="user-list">
-            <h2>User List</h2>
-            <ul id="user-list-admin"></ul>
-        </div>
-    </div>
-    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.12.0/firebase-firestore.js"></script>
-    <script src="scripts.js"></script>
+<body>
+    <h1>Admin Login</h1>
+    <form id="admin-login-form">
+        <input type="email" id="admin-email" placeholder="Email" required>
+        <input type="password" id="admin-password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="admin-signup.html">Sign Up</a></p>
+
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
