@@ -3,8 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Home</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Blog Platform</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f4f4f4;
+        }
+
+        header {
+            background: #333;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .posts-list {
+            margin-top: 20px;
+        }
+
+        .post-item {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: #fff;
+            transition: box-shadow 0.3s;
+        }
+
+        .post-item:hover {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .post-item h2 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .post-item p {
+            color: #666;
+        }
+
+        .post-item a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .post-item a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1em;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            nav {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav a {
+                margin: 5px 0;
+            }
+
+            main {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -16,15 +117,15 @@
             <a href="admin.html">Admin Login</a>
         </nav>
     </header>
-    
-    <main>
+
+    <main id="main-content">
         <div class="search-bar">
             <input type="text" id="search-input" placeholder="Search posts...">
             <button id="search-button">Search</button>
         </div>
         <div id="posts-list" class="posts-list"></div>
     </main>
-    
+
     <footer>
         <p>&copy; 2024 Blog Platform. All rights reserved.</p>
     </footer>
@@ -32,6 +133,84 @@
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_dNTrWIo8fSTub-J4uh_Yjf4Fr_qay3c",
+            authDomain: "ind-edu.firebaseapp.com",
+            databaseURL: "https://ind-edu-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ind-edu",
+            storageBucket: "ind-edu.appspot.com",
+            messagingSenderId: "60520122150",
+            appId: "1:60520122150:web:0205f57353dae6cfc723e7",
+            measurementId: "G-XLZRGM88T9"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const firestore = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Show section based on authentication status
+        async function handleAuth() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    if (user.email === "challawaheed@gmail.com") {
+                        window.location.href = 'admin.html';
+                    } else {
+                        loadPosts();
+                    }
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        // Load Posts for Home
+        async function loadPosts() {
+            const postsList = document.getElementById('posts-list');
+            const postsSnapshot = await firestore.collection('posts').get();
+
+            postsList.innerHTML = ''; // Clear existing posts
+
+            postsSnapshot.forEach(doc => {
+                const post = doc.data();
+                const postElement = document.createElement('div');
+                postElement.classList.add('post-item');
+                postElement.innerHTML = `
+                    <h2>${post.title}</h2>
+                    <p>${post.content.substring(0, 150)}...</p>
+                    <a href="post.html?id=${doc.id}">Read more</a>
+                `;
+                postsList.appendChild(postElement);
+            });
+        }
+
+        // Search Posts
+        document.getElementById('search-button')?.addEventListener('click', async () => {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const postsList = document.getElementById('posts-list');
+            const postsSnapshot = await firestore.collection('posts').get();
+
+            postsList.innerHTML = ''; // Clear existing posts
+
+            postsSnapshot.forEach(doc => {
+                const post = doc.data();
+                if (post.title.toLowerCase().includes(query) || post.content.toLowerCase().includes(query)) {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('post-item');
+                    postElement.innerHTML = `
+                        <h2>${post.title}</h2>
+                        <p>${post.content.substring(0, 150)}...</p>
+                        <a href="post.html?id=${doc.id}">Read more</a>
+                    `;
+                    postsList.appendChild(postElement);
+                }
+            });
+        });
+
+        // Initial Load
+        handleAuth();
+    </script>
 </body>
 </html>
