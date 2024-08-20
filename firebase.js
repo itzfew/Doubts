@@ -1,6 +1,7 @@
-// Import Firebase App (the core Firebase SDK) and Firebase Firestore
+// Import Firebase and Firestore
 import firebase from 'firebase/app';
-import 'firebase/firestore'; // Import Firestore
+import 'firebase/firestore';
+import 'firebase/auth';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,10 +19,11 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 } else {
-  firebase.app(); // if already initialized, use that one
+  firebase.app();
 }
 
-// Get a Firestore instance
+// Get Firestore and Auth instances
 const db = firebase.firestore();
+const auth = firebase.auth();
 
-export { db };
+export { db, auth };
