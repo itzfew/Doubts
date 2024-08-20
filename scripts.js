@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.12.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/9.12.0/firebase-firestore.js';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -16,7 +16,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
+const auth = getAuth(app);
 const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const signupForm = document.getElementById('signup-form');
     const showSignup = document.getElementById('show-signup');
     const showLogin = document.getElementById('show-login');
+    const resetPasswordForm = document.getElementById('reset-password-form');
+    const showLoginReset = document.getElementById('show-login-reset');
     const examSelection = document.getElementById('exam-selection');
     const quizOptions = document.getElementById('quiz-options');
     const quizContainer = document.getElementById('quiz');
@@ -44,6 +46,11 @@ document.addEventListener('DOMContentLoaded', function () {
         loginForm.style.display = 'block';
     });
 
+    showLoginReset.addEventListener('click', () => {
+        resetPasswordForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    });
+
     // Login and Signup
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -53,32 +60,43 @@ document.addEventListener('DOMContentLoaded', function () {
             await signInWithEmailAndPassword(auth, username, password);
             window.location.href = 'dashboard.html';
         } catch (error) {
-            console.error(error);
+            alert(error.message);
         }
     });
 
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('signup-username').value;
+        const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         try {
-            await createUserWithEmailAndPassword(auth, username, password);
+            await createUserWithEmailAndPassword(auth, email, password);
             window.location.href = 'dashboard.html';
         } catch (error) {
-            console.error(error);
+            alert(error.message);
         }
     });
 
-    // Password Reset
-    document.getElementById('reset-password').addEventListener('click', async () => {
-        const email = prompt('Enter your email for password reset');
-        if (email) {
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert('Password reset email sent!');
-            } catch (error) {
-                console.error(error);
-            }
+    resetPasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('reset-email').value;
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert('Password reset email sent!');
+            resetPasswordForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    // Logout
+    document.getElementById('logout').addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        } catch (error) {
+            alert(error.message);
         }
     });
 
@@ -144,6 +162,12 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             questionContainer.appendChild(button);
         });
+
+        const nextButton = document.getElementById('next-question');
+        nextButton.style.display = 'block';
+        nextButton.addEventListener('click', () => {
+            showQuestion(questions, currentIndex + 1, timePerQuestion, numQuestions);
+        });
     }
 
     function checkAnswer(question, selectedOption, index) {
@@ -159,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
             await addDoc(collection(db, 'exams'), { name: examName });
             loadAdminExams();
         } catch (error) {
-            console.error(error);
+            alert(error.message);
         }
     });
 
@@ -198,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 alert('Question added!');
             } catch (error) {
-                console.error(error);
+                alert(error.message);
             }
         });
     }
@@ -215,11 +239,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Load data on page load
+    // Initialize Pages
     if (document.body.id === 'dashboard') {
         loadExams();
     } else if (document.body.id === 'admin-dashboard') {
         loadAdminExams();
         loadUserList();
     }
+
+    // Auth State Listener
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'index.html';
+        }
+    });
 });
