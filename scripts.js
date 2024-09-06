@@ -3,6 +3,7 @@ import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimest
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
 
+
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAJVzWcSVu7nW-069bext5W6Nizx4sfxIA",
@@ -55,7 +56,7 @@ if (window.location.pathname.includes('profile.html')) {
         const password = document.getElementById('password').value;
         try {
             await createUserWithEmailAndPassword(auth, email, password);
-            alert('Welcome to Doubt Session!');
+            alert('Welcome to Ind Edu!');
             window.location.href = 'profile.html';
         } catch (error) {
             console.error('Error signing up: ', error);
@@ -82,6 +83,10 @@ if (window.location.pathname.includes('profile.html')) {
 if (window.location.pathname.includes('index.html')) {
     const postForm = document.getElementById('post-form');
     const signOutButton = document.getElementById('sign-out');
+    const replyPopup = document.getElementById('reply-popup');
+    const replyContent = document.getElementById('reply-content');
+    const submitReplyButton = document.getElementById('submit-reply');
+    let currentPostId = '';
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -95,8 +100,9 @@ if (window.location.pathname.includes('index.html')) {
 
     document.getElementById('submit-post').addEventListener('click', async () => {
         const postContent = document.getElementById('post-content').value;
-        if (postContent.trim() === '') {
-            alert('Doubt content cannot be empty.');
+        const displayName = document.getElementById('display-name').value;
+        if (postContent.trim() === '' || displayName.trim() === '') {
+            alert('Post content and display name cannot be empty.');
             return;
         }
 
@@ -106,11 +112,12 @@ if (window.location.pathname.includes('index.html')) {
                     content: postContent,
                     timestamp: serverTimestamp(),
                     uid: auth.currentUser.uid,
-                    displayName: auth.currentUser.email.split('@')[0]
+                    displayName: displayName
                 });
                 document.getElementById('post-content').value = '';
+                document.getElementById('display-name').value = '';
                 displayPosts();
-                alert('Doubt added successfully!');
+                alert('Post added successfully!');
             } catch (error) {
                 console.error('Error adding post: ', error);
             }
@@ -135,7 +142,7 @@ if (window.location.pathname.includes('index.html')) {
         try {
             const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
-            querySnapshot.forEach(doc => {
+            querySnapshot.forEach(async doc => {
                 const post = doc.data();
                 const postDiv = document.createElement('div');
                 postDiv.classList.add('post');
@@ -151,7 +158,8 @@ if (window.location.pathname.includes('index.html')) {
                 const isVerified = post.displayName.toLowerCase().includes('verify');
                 // Remove "verify" from display name
                 const cleanDisplayName = post.displayName.replace(/verify/i, '').trim();
-                
+
+                // Display post content
                 postDiv.innerHTML = `
                     <div class="author">
                         ${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}
@@ -159,18 +167,17 @@ if (window.location.pathname.includes('index.html')) {
                     <div class="content">${post.content}</div>
                     <div class="date">Published on: ${formattedDate}</div>
                     <div class="actions">
-                        <button class="share-btn" onclick="sharePost('${doc.id}')"><i class="fa fa-share"></i> Share</button>
+                        <button class="reply-btn" onclick="showReplyPopup('${doc.id}')"><i class="fa fa-reply"></i> Reply</button>
                         ${auth.currentUser && auth.currentUser.uid === post.uid ? `
                             <button class="edit-btn" onclick="editPost('${doc.id}', '${post.content}')"><i class="fa fa-edit"></i> Edit</button>
                             <button class="delete-btn" onclick="deletePost('${doc.id}')"><i class="fa fa-trash"></i> Delete</button>
                         ` : ''}
                     </div>
-                    <div class="replies-section">
-                        <textarea id="reply-content-${doc.id}" placeholder="Type your reply here..."></textarea>
-                        <button onclick="submitReply('${doc.id}')">Submit Reply</button>
-                        <div id="replies-${doc.id}"></div>
+                    <div class="replies-section" id="replies-${doc.id}">
+                        <!-- Replies will be dynamically added here -->
                     </div>
                 `;
+
                 postList.appendChild(postDiv);
                 displayReplies(doc.id);
             });
@@ -179,36 +186,56 @@ if (window.location.pathname.includes('index.html')) {
         }
     }
 
-    window.editPost = async function(postId, currentContent) {
-        const newContent = prompt('Edit your doubt:', currentContent);
-        if (newContent !== null && newContent.trim() !== '') {
-            try {
-                const postRef = doc(db, 'posts', postId);
-                await updateDoc(postRef, {
-                    content: newContent
-                });
-                displayPosts();
-            } catch (error) {
-                console.error('Error updating post: ', error);
-            }
-        }
-    };
-
-    window.deletePost = async function(postId) {
-        if (confirm('Are you sure you want to delete this doubt?')) {
-            try {
-                await deleteDoc(doc(db, 'posts', postId));
-                displayPosts();
-            } catch (error) {
-                console.error('Error deleting post: ', error);
-            }
-        }
-    };
-
     async function displayReplies(postId) {
-        const repliesDiv = document.getElementById(`replies-${postId}`);
-        repliesDiv.innerHTML = '';
+        const repliesSection = document.getElementById(`replies-${postId}`);
+        repliesSection.innerHTML = '';
+        try {
+            const q = query(collection(db, `posts/${postId}/replies`), orderBy('timestamp', 'desc'));
+            const querySnapshot = await getDocs(q);
+            let count = 0;
+            querySnapshot.forEach(doc => {
+                if (count < 2) {
+                    const reply = doc.data();
+                    const replyDiv = document.createElement('div');
+                    replyDiv.classList.add('reply');
 
+                    // Format timestamp
+                    const timestamp = reply.timestamp.toDate();
+                    const formattedDate = timestamp.toLocaleString('en-US', { 
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+                        hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' 
+                    });
+
+                    replyDiv.innerHTML = `
+                        <div class="author">${reply.displayName}</div>
+                        <div class="content">${reply.content}</div>
+                        <div class="date">Replied on: ${formattedDate}</div>
+                        ${auth.currentUser && auth.currentUser.uid === reply.uid ? `
+                            <div class="actions">
+                                <button class="delete-btn" onclick="deleteReply('${postId}', '${doc.id}')"><i class="fa fa-trash"></i> Delete</button>
+                            </div>
+                        ` : ''}
+                    `;
+                    repliesSection.appendChild(replyDiv);
+                    count++;
+                }
+            });
+
+            if (count >= 2) {
+                const viewMoreBtn = document.createElement('button');
+                viewMoreBtn.classList.add('view-more-replies');
+                viewMoreBtn.textContent = 'View more replies';
+                viewMoreBtn.onclick = () => displayAllReplies(postId);
+                repliesSection.appendChild(viewMoreBtn);
+            }
+        } catch (error) {
+            console.error('Error getting replies: ', error);
+        }
+    }
+
+    async function displayAllReplies(postId) {
+        const repliesSection = document.getElementById(`replies-${postId}`);
+        repliesSection.innerHTML = '';
         try {
             const q = query(collection(db, `posts/${postId}/replies`), orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
@@ -224,71 +251,84 @@ if (window.location.pathname.includes('index.html')) {
                     hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' 
                 });
 
-                // Check if display name includes "verify"
-                const isVerified = reply.displayName.toLowerCase().includes('verify');
-                // Remove "verify" from display name
-                const cleanDisplayName = reply.displayName.replace(/verify/i, '').trim();
-                
                 replyDiv.innerHTML = `
-                    <div class="author">
-                        ${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}
-                    </div>
+                    <div class="author">${reply.displayName}</div>
                     <div class="content">${reply.content}</div>
-                    <div class="date">Published on: ${formattedDate}</div>
+                    <div class="date">Replied on: ${formattedDate}</div>
                     ${auth.currentUser && auth.currentUser.uid === reply.uid ? `
-                        <button class="edit-btn" onclick="editReply('${doc.id}', '${reply.content}')"><i class="fa fa-edit"></i> Edit</button>
-                        <button class="delete-btn" onclick="deleteReply('${doc.id}')"><i class="fa fa-trash"></i> Delete</button>
+                        <div class="actions">
+                            <button class="delete-btn" onclick="deleteReply('${postId}', '${doc.id}')"><i class="fa fa-trash"></i> Delete</button>
+                        </div>
                     ` : ''}
                 `;
-                repliesDiv.appendChild(replyDiv);
+                repliesSection.appendChild(replyDiv);
             });
         } catch (error) {
             console.error('Error getting replies: ', error);
         }
     }
 
-    window.submitReply = async function(postId) {
-        const replyContent = document.getElementById(`reply-content-${postId}`).value;
-        if (replyContent.trim() === '') {
+    function showReplyPopup(postId) {
+        currentPostId = postId;
+        replyPopup.style.display = 'flex';
+    }
+
+    document.querySelector('.popup .close-btn').addEventListener('click', () => {
+        replyPopup.style.display = 'none';
+    });
+
+    submitReplyButton.addEventListener('click', async () => {
+        const content = replyContent.value;
+        if (content.trim() === '') {
             alert('Reply content cannot be empty.');
             return;
         }
 
         if (auth.currentUser) {
             try {
-                await addDoc(collection(db, `posts/${postId}/replies`), {
-                    content: replyContent,
+                await addDoc(collection(db, `posts/${currentPostId}/replies`), {
+                    content: content,
                     timestamp: serverTimestamp(),
                     uid: auth.currentUser.uid,
                     displayName: auth.currentUser.email.split('@')[0]
                 });
-                document.getElementById(`reply-content-${postId}`).value = '';
-                displayReplies(postId);
-                alert('Reply added successfully!');
+                replyContent.value = '';
+                displayReplies(currentPostId);
+                replyPopup.style.display = 'none';
             } catch (error) {
                 console.error('Error adding reply: ', error);
             }
         } else {
             alert('You must be logged in to reply.');
         }
-    };
+    });
 
-    window.editReply = async function(replyId, currentContent) {
-        const newContent = prompt('Edit your reply:', currentContent);
+    window.editPost = async function(postId, currentContent) {
+        const newContent = prompt('Edit your post:', currentContent);
         if (newContent !== null && newContent.trim() !== '') {
             try {
-                const replyRef = doc(db, `posts/${postId}/replies`, replyId);
-                await updateDoc(replyRef, {
+                await updateDoc(doc(db, 'posts', postId), {
                     content: newContent
                 });
-                displayReplies(postId);
+                displayPosts();
             } catch (error) {
-                console.error('Error updating reply: ', error);
+                console.error('Error editing post: ', error);
             }
         }
     };
 
-    window.deleteReply = async function(replyId) {
+    window.deletePost = async function(postId) {
+        if (confirm('Are you sure you want to delete this post?')) {
+            try {
+                await deleteDoc(doc(db, 'posts', postId));
+                displayPosts();
+            } catch (error) {
+                console.error('Error deleting post: ', error);
+            }
+        }
+    };
+
+    window.deleteReply = async function(postId, replyId) {
         if (confirm('Are you sure you want to delete this reply?')) {
             try {
                 await deleteDoc(doc(db, `posts/${postId}/replies`, replyId));
@@ -299,6 +339,5 @@ if (window.location.pathname.includes('index.html')) {
         }
     };
 
-    // Initial display of posts
     displayPosts();
 }
