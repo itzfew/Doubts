@@ -1,5 +1,5 @@
- import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
 
@@ -14,90 +14,61 @@ const firebaseConfig = {
     appId: "1:560742513136:web:102edd272982704fdb8535",
     measurementId: "G-78TC8XTPF7"
 };
-
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Show Profile Popup
-function showProfilePopup() {
-    document.getElementById('profile-popup').style.display = 'flex';
+// Modal handling
+const modal = document.getElementById('auth-modal');
+const closeModal = document.querySelector('.modal .close');
+const modalSignInButton = document.getElementById('modal-sign-in');
+const modalSignUpButton = document.getElementById('modal-sign-up');
+const modalEmailInput = document.getElementById('modal-email');
+const modalPasswordInput = document.getElementById('modal-password');
+
+// Show modal
+function showModal() {
+    modal.style.display = 'block';
 }
 
-// Hide Profile Popup
-function hideProfilePopup() {
-    document.getElementById('profile-popup').style.display = 'none';
+// Hide modal
+function hideModal() {
+    modal.style.display = 'none';
 }
 
-// Profile page logic
-if (window.location.pathname.includes('profile.html')) {
-    const authSection = document.getElementById('auth-section');
-    const userInfo = document.getElementById('user-info');
-    const usernameDisplay = document.getElementById('username-display');
-    const profilePic = document.getElementById('profile-pic');
-    const profileName = document.getElementById('profile-name');
-    const signOutButton = document.getElementById('sign-out');
-    const viewPostsButton = document.getElementById('view-posts');
+closeModal.onclick = hideModal;
 
-    signOutButton.addEventListener('click', async () => {
-        try {
-            await signOut(auth);
-            window.location.href = 'index.html';
-        } catch (error) {
-            console.error('Error signing out: ', error);
-        }
-    });
+// Sign in
+modalSignInButton.addEventListener('click', async () => {
+    const email = modalEmailInput.value;
+    const password = modalPasswordInput.value;
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        hideModal();
+        displayPosts();
+    } catch (error) {
+        console.error('Error signing in: ', error);
+    }
+});
 
-    document.getElementById('sign-in').addEventListener('click', async () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            alert('Welcome back!');
-            window.location.href = 'index.html';
-        } catch (error) {
-            console.error('Error signing in: ', error);
-        }
-    });
-
-    document.getElementById('sign-up').addEventListener('click', async () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            alert('Welcome to Edu Hub!');
-            window.location.href = 'profile.html';
-        } catch (error) {
-            console.error('Error signing up: ', error);
-        }
-    });
-
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            authSection.style.display = 'none';
-            userInfo.style.display = 'block';
-            const profilePicURL = user.photoURL || 'default-profile.png';
-            profilePic.src = profilePicURL;
-            profileName.textContent = user.displayName || 'Guest';
-            usernameDisplay.textContent = user.email.split('@')[0];
-        } else {
-            authSection.style.display = 'block';
-            userInfo.style.display = 'none';
-        }
-    });
-
-    viewPostsButton.addEventListener('click', () => {
-        window.location.href = 'index.html';
-    });
-}
+// Sign up
+modalSignUpButton.addEventListener('click', async () => {
+    const email = modalEmailInput.value;
+    const password = modalPasswordInput.value;
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        hideModal();
+        displayPosts();
+    } catch (error) {
+        console.error('Error signing up: ', error);
+    }
+});
 
 // Main index page logic
 if (window.location.pathname.includes('index.html')) {
-    const postForm = document.getElementById('post-form');
+    const postForm = document.getElementById('post-section');
     const signOutButton = document.getElementById('sign-out');
-    const replyPopup = document.getElementById('reply-popup');
-    let currentPostId = '';
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -110,6 +81,11 @@ if (window.location.pathname.includes('index.html')) {
     });
 
     document.getElementById('submit-post').addEventListener('click', async () => {
+        if (!auth.currentUser) {
+            showModal();
+            return;
+        }
+
         const postContent = document.getElementById('post-content').value;
         const displayName = document.getElementById('display-name').value;
         if (postContent.trim() === '' || displayName.trim() === '') {
@@ -117,25 +93,19 @@ if (window.location.pathname.includes('index.html')) {
             return;
         }
 
-        if (auth.currentUser) {
-            try {
-                await addDoc(collection(db, 'posts'), {
-                    content: postContent,
-                    timestamp: serverTimestamp(),
-                    uid: auth.currentUser.uid,
-                    displayName: displayName,
-                    profilePic: auth.currentUser.photoURL || 'default-profile.png',
-                    likes: 0
-                });
-                document.getElementById('post-content').value = '';
-                document.getElementById('display-name').value = '';
-                displayPosts();
-                alert('Post added successfully!');
-            } catch (error) {
-                console.error('Error adding post: ', error);
-            }
-        } else {
-            alert('You must be logged in to post.');
+        try {
+            await addDoc(collection(db, 'posts'), {
+                content: postContent,
+                timestamp: serverTimestamp(),
+                uid: auth.currentUser.uid,
+                displayName: displayName
+            });
+            document.getElementById('post-content').value = '';
+            document.getElementById('display-name').value = '';
+            displayPosts();
+            alert('Post added successfully!');
+        } catch (error) {
+            console.error('Error adding post: ', error);
         }
     });
 
@@ -148,36 +118,6 @@ if (window.location.pathname.includes('index.html')) {
         }
     });
 
-    document.getElementById('close-popup').addEventListener('click', () => {
-        replyPopup.style.display = 'none';
-    });
-
-    document.getElementById('submit-reply').addEventListener('click', async () => {
-        const replyContent = document.getElementById('reply-content').value;
-        if (replyContent.trim() === '') {
-            alert('Reply cannot be empty.');
-            return;
-        }
-
-        if (auth.currentUser) {
-            try {
-                await addDoc(collection(db, 'posts', currentPostId, 'replies'), {
-                    content: replyContent,
-                    timestamp: serverTimestamp(),
-                    uid: auth.currentUser.uid,
-                    displayName: auth.currentUser.displayName || 'Anonymous',
-                    profilePic: auth.currentUser.photoURL || 'default-profile.png'
-                });
-                replyPopup.style.display = 'none';
-                displayPosts();
-            } catch (error) {
-                console.error('Error adding reply: ', error);
-            }
-        } else {
-            alert('You must be logged in to reply.');
-        }
-    });
-
     async function displayPosts() {
         const postList = document.getElementById('post-list');
         postList.innerHTML = '';
@@ -185,11 +125,11 @@ if (window.location.pathname.includes('index.html')) {
         try {
             const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
-            querySnapshot.forEach(doc => {
+            querySnapshot.forEach(async doc => {
                 const post = doc.data();
+                const postId = doc.id;
                 const postDiv = document.createElement('div');
                 postDiv.classList.add('post');
-                const postId = doc.id;
 
                 // Format timestamp
                 const timestamp = post.timestamp.toDate();
@@ -198,26 +138,33 @@ if (window.location.pathname.includes('index.html')) {
                     hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' 
                 });
 
+                // Check if display name includes "verify"
+                const isVerified = post.displayName.toLowerCase().includes('verify');
+                // Remove "verify" from display name
+                const cleanDisplayName = post.displayName.replace(/verify/i, '').trim();
+                
                 postDiv.innerHTML = `
-                    <div class="post-header">
-                        <img src="${post.profilePic}" alt="Profile Picture">
-                        <div class="author">${post.displayName}</div>
-                        <div class="date">Posted on: ${formattedDate}</div>
+                    <div class="author">
+                        <img src="default-profile-pic.jpg" alt="Profile Picture" class="profile-pic" />
+                        ${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}
                     </div>
                     <div class="content">${post.content}</div>
+                    <div class="date">Published on: ${formattedDate}</div>
                     <div class="actions">
-                        <button class="reply-btn" onclick="showReplyPopup('${postId}')">Reply</button>
-                        <button class="like-btn" onclick="likePost('${postId}')">Like <span id="likes-${postId}">${post.likes}</span></button>
+                        <button class="share-btn" onclick="sharePost('${postId}')"><i class="fa fa-share"></i> Share</button>
                         ${auth.currentUser && auth.currentUser.uid === post.uid ? `
-                            <button class="edit-btn" onclick="editPost('${postId}', '${post.content}')">Edit</button>
-                            <button class="delete-btn" onclick="deletePost('${postId}')">Delete</button>
+                            <button class="edit-btn" onclick="editPost('${postId}', '${post.content}')"><i class="fa fa-edit"></i> Edit</button>
+                            <button class="delete-btn" onclick="deletePost('${postId}')"><i class="fa fa-trash"></i> Delete</button>
                         ` : ''}
+                        <button class="toggle-replies-btn" onclick="toggleReplies('${postId}')"><i class="fa fa-comment"></i> Replies</button>
+                        <textarea id="reply-content-${postId}" placeholder="Write a reply..."></textarea>
+                        <button onclick="addReply('${postId}')">Add Reply</button>
                     </div>
-                    <div id="replies-${postId}" class="replies-section"></div>
+                    <div id="replies-${postId}" class="replies">
+                        <!-- Replies will be dynamically loaded here -->
+                    </div>
                 `;
                 postList.appendChild(postDiv);
-
-                // Display replies
                 displayReplies(postId);
             });
         } catch (error) {
@@ -225,15 +172,68 @@ if (window.location.pathname.includes('index.html')) {
         }
     }
 
+    window.editPost = async function(postId, currentContent) {
+        const newContent = prompt('Edit your post:', currentContent);
+        if (newContent !== null && newContent.trim() !== '') {
+            try {
+                const postRef = doc(db, 'posts', postId);
+                await updateDoc(postRef, {
+                    content: newContent
+                });
+                displayPosts();
+            } catch (error) {
+                console.error('Error updating post: ', error);
+            }
+        }
+    };
+
+    window.deletePost = async function(postId) {
+        if (confirm('Are you sure you want to delete this post?')) {
+            try {
+                await deleteDoc(doc(db, 'posts', postId));
+                displayPosts();
+            } catch (error) {
+                console.error('Error deleting post: ', error);
+            }
+        }
+    };
+
+    window.addReply = async function(postId) {
+        const replyContent = document.getElementById(`reply-content-${postId}`).value;
+        if (replyContent.trim() === '') {
+            alert('Reply content cannot be empty.');
+            return;
+        }
+
+        if (auth.currentUser) {
+            try {
+                await addDoc(collection(db, `posts/${postId}/replies`), {
+                    content: replyContent,
+                    timestamp: serverTimestamp(),
+                    uid: auth.currentUser.uid,
+                    displayName: auth.currentUser.email.split('@')[0] // Using email as default display name
+                });
+                document.getElementById(`reply-content-${postId}`).value = '';
+                displayReplies(postId);
+            } catch (error) {
+                console.error('Error adding reply: ', error);
+            }
+        } else {
+            showModal();
+        }
+    };
+
     async function displayReplies(postId) {
-        const repliesSection = document.getElementById(`replies-${postId}`);
-        repliesSection.innerHTML = '';
+        const repliesList = document.getElementById(`replies-${postId}`);
+        repliesList.innerHTML = '';
 
         try {
-            const q = query(collection(db, 'posts', postId, 'replies'), orderBy('timestamp', 'desc'));
+            const q = query(collection(db, `posts/${postId}/replies`), orderBy('timestamp', 'asc'));
             const querySnapshot = await getDocs(q);
-            querySnapshot.forEach(doc => {
-                const reply = doc.data();
+            const replies = querySnapshot.docs.map(doc => doc.data());
+
+            // Display the first 2 replies
+            replies.slice(0, 2).forEach(reply => {
                 const replyDiv = document.createElement('div');
                 replyDiv.classList.add('reply');
 
@@ -245,84 +245,59 @@ if (window.location.pathname.includes('index.html')) {
                 });
 
                 replyDiv.innerHTML = `
-                    <div class="reply-header">
-                        <img src="${reply.profilePic}" alt="Profile Picture">
-                        <div class="author">${reply.displayName}</div>
-                        <div class="date">Replied on: ${formattedDate}</div>
+                    <div class="reply-author">
+                        ${reply.displayName}
                     </div>
-                    <div class="content">${reply.content}</div>
-                    ${auth.currentUser && auth.currentUser.uid === reply.uid ? `
-                        <div class="actions">
-                            <button class="delete-reply-btn" onclick="deleteReply('${postId}', '${doc.id}')">Delete</button>
-                        </div>
-                    ` : ''}
+                    <div class="reply-content">${reply.content}</div>
+                    <div class="reply-date">Replied on: ${formattedDate}</div>
                 `;
-                repliesSection.appendChild(replyDiv);
+                repliesList.appendChild(replyDiv);
             });
+
+            if (replies.length > 2) {
+                const showMoreButton = document.createElement('button');
+                showMoreButton.textContent = 'Show More Replies';
+                showMoreButton.onclick = () => {
+                    replies.slice(2).forEach(reply => {
+                        const replyDiv = document.createElement('div');
+                        replyDiv.classList.add('reply');
+
+                        // Format timestamp
+                        const timestamp = reply.timestamp.toDate();
+                        const formattedDate = timestamp.toLocaleString('en-US', { 
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+                            hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' 
+                        });
+
+                        replyDiv.innerHTML = `
+                            <div class="reply-author">
+                                ${reply.displayName}
+                            </div>
+                            <div class="reply-content">${reply.content}</div>
+                            <div class="reply-date">Replied on: ${formattedDate}</div>
+                        `;
+                        repliesList.appendChild(replyDiv);
+                    });
+                    showMoreButton.style.display = 'none';
+                };
+                repliesList.appendChild(showMoreButton);
+            }
+
+            repliesList.style.display = 'block';
         } catch (error) {
             console.error('Error getting replies: ', error);
         }
     }
 
-    function showReplyPopup(postId) {
-        currentPostId = postId;
-        replyPopup.style.display = 'flex';
-    }
+    window.toggleReplies = function(postId) {
+        const repliesList = document.getElementById(`replies-${postId}`);
+        const isVisible = repliesList.style.display === 'block';
+        repliesList.style.display = isVisible ? 'none' : 'block';
 
-    async function likePost(postId) {
-        try {
-            const postRef = doc(db, 'posts', postId);
-            const postDoc = await getDoc(postRef);
-            const post = postDoc.data();
-
-            await updateDoc(postRef, {
-                likes: post.likes + 1
-            });
-
-            document.getElementById(`likes-${postId}`).textContent = post.likes + 1;
-        } catch (error) {
-            console.error('Error liking post: ', error);
+        if (!isVisible) {
+            displayReplies(postId);
         }
-    }
-
-    function editPost(postId, content) {
-        const newContent = prompt('Edit your post:', content);
-        if (newContent !== null && newContent.trim() !== '') {
-            updatePost(postId, newContent);
-        }
-    }
-
-    async function updatePost(postId, newContent) {
-        try {
-            const postRef = doc(db, 'posts', postId);
-            await updateDoc(postRef, { content: newContent });
-            displayPosts();
-        } catch (error) {
-            console.error('Error updating post: ', error);
-        }
-    }
-
-    async function deletePost(postId) {
-        if (confirm('Are you sure you want to delete this post?')) {
-            try {
-                await deleteDoc(doc(db, 'posts', postId));
-                displayPosts();
-            } catch (error) {
-                console.error('Error deleting post: ', error);
-            }
-        }
-    }
-
-    async function deleteReply(postId, replyId) {
-        if (confirm('Are you sure you want to delete this reply?')) {
-            try {
-                await deleteDoc(doc(db, 'posts', postId, 'replies', replyId));
-                displayReplies(postId);
-            } catch (error) {
-                console.error('Error deleting reply: ', error);
-            }
-        }
-    }
+    };
 
     displayPosts();
 }
