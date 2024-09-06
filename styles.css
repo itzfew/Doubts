@@ -1,80 +1,96 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    background-color: #f0f4f8;
 }
 
 header {
-    background: #333;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
     color: #fff;
-    padding: 10px 20px;
+    padding: 15px 20px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 header nav {
-    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 header nav a {
     color: #fff;
-    margin: 0 10px;
+    margin: 0 15px;
     text-decoration: none;
+    font-weight: bold;
 }
 
 header nav button {
-    background: #555;
-    border: none;
-    color: #fff;
-    padding: 10px 20px;
-    cursor: pointer;
-}
-
-header nav button:hover {
-    background: #777;
-}
-
-main {
-    padding: 20px;
-}
-
-/* Input and Button Styles */
-input, textarea, select {
-    display: block;
-    margin: 10px 0;
-    padding: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-button {
     background: #333;
     border: none;
     color: #fff;
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 5px;
-    margin: 5px;
+    transition: background 0.3s ease;
 }
 
-button:hover {
+header nav button:hover {
     background: #555;
 }
 
-/* Post Styles */
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+input, textarea, button {
+    display: block;
+    margin: 10px 0;
+    padding: 12px;
+    width: calc(100% - 24px);
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+button {
+    background: #ff7e5f;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    max-width: 200px;
+}
+
+button:hover {
+    background: #feb47b;
+}
+
 .post {
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 10px;
     margin-bottom: 20px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.post:hover {
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
 }
 
 .post .author {
@@ -84,11 +100,13 @@ button:hover {
 }
 
 .post .profile-pic {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     margin-right: 10px;
-    background-color: #eee;
+    background-image: url('https://exam-one-ashen.vercel.app/defult.jpg');
+    background-size: cover;
+    background-position: center;
 }
 
 .post .verified {
@@ -97,40 +115,39 @@ button:hover {
 
 .post .content {
     margin-top: 10px;
+    font-size: 1.1em;
 }
 
 .post .date {
     margin-top: 10px;
-    font-size: 0.8em;
+    font-size: 0.9em;
     color: #888;
 }
 
 .post .actions {
     margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
 }
 
 .post .actions button {
-    background: #555;
+    background: #007bff;
     border: none;
     color: #fff;
     padding: 5px 10px;
-    margin-right: 5px;
     border-radius: 5px;
+    font-size: 0.9em;
 }
 
-.post .actions .toggle-replies-btn {
-    background: #007bff;
-}
-
-.post .actions .toggle-replies-btn:hover {
+.post .actions button:hover {
     background: #0056b3;
 }
 
-/* Replies Styles */
 .replies {
     margin-top: 20px;
     padding-left: 20px;
-    border-left: 3px solid #ddd;
+    border-left: 3px solid #007bff;
     background: #f9f9f9;
     border-radius: 10px;
 }
@@ -139,7 +156,7 @@ button:hover {
     margin-bottom: 10px;
     padding: 10px;
     background: #fff;
-    border-left: 3px solid #007bff;
+    border-left: 3px solid #ff7e5f;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -155,10 +172,11 @@ button:hover {
 
 .replies textarea {
     margin-top: 10px;
-    width: calc(100% - 22px); /* Adjusted for padding and border */
+    width: calc(100% - 22px);
     box-sizing: border-box;
     padding: 10px;
     border-radius: 5px;
+    border: 1px solid #ddd;
 }
 
 /* Modal Styles */
@@ -181,31 +199,39 @@ button:hover {
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #ddd;
-    width: 80%;
+    width: 90%;
     max-width: 500px;
     border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 .close {
-    color: #aaa;
+    color: #aaa; 
     float: right;
     font-size: 28px;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .close:hover,
 .close:focus {
     color: #000;
     text-decoration: none;
-    cursor: pointer;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .post-form,
-    .post-list {
-        width: 100%;
+    main {
         padding: 10px;
+    }
+
+    .post, .reply {
+        padding: 15px;
+    }
+
+    button {
+        width: auto;
+        max-width: none;
     }
 }
