@@ -55,7 +55,7 @@ if (window.location.pathname.includes('profile.html')) {
         const password = document.getElementById('password').value;
         try {
             await createUserWithEmailAndPassword(auth, email, password);
-            alert('Welcome to Ind Edu!');
+            alert('Welcome to Doubt Session!');
             window.location.href = 'profile.html';
         } catch (error) {
             console.error('Error signing up: ', error);
@@ -95,9 +95,8 @@ if (window.location.pathname.includes('index.html')) {
 
     document.getElementById('submit-post').addEventListener('click', async () => {
         const postContent = document.getElementById('post-content').value;
-        const displayName = document.getElementById('display-name').value;
-        if (postContent.trim() === '' || displayName.trim() === '') {
-            alert('Post content and display name cannot be empty.');
+        if (postContent.trim() === '') {
+            alert('Doubt content cannot be empty.');
             return;
         }
 
@@ -107,12 +106,11 @@ if (window.location.pathname.includes('index.html')) {
                     content: postContent,
                     timestamp: serverTimestamp(),
                     uid: auth.currentUser.uid,
-                    displayName: displayName
+                    displayName: auth.currentUser.email.split('@')[0]
                 });
                 document.getElementById('post-content').value = '';
-                document.getElementById('display-name').value = '';
                 displayPosts();
-                alert('Post added successfully!');
+                alert('Doubt added successfully!');
             } catch (error) {
                 console.error('Error adding post: ', error);
             }
@@ -167,10 +165,11 @@ if (window.location.pathname.includes('index.html')) {
                             <button class="delete-btn" onclick="deletePost('${doc.id}')"><i class="fa fa-trash"></i> Delete</button>
                         ` : ''}
                     </div>
-                    <!-- Replies Section -->
-                    <div id="replies-${doc.id}" class="replies"></div>
-                    <textarea id="reply-content-${doc.id}" placeholder="Write a reply..."></textarea>
-                    <button onclick="submitReply('${doc.id}')">Submit Reply</button>
+                    <div class="replies-section">
+                        <textarea id="reply-content-${doc.id}" placeholder="Type your reply here..."></textarea>
+                        <button onclick="submitReply('${doc.id}')">Submit Reply</button>
+                        <div id="replies-${doc.id}"></div>
+                    </div>
                 `;
                 postList.appendChild(postDiv);
                 displayReplies(doc.id);
@@ -181,7 +180,7 @@ if (window.location.pathname.includes('index.html')) {
     }
 
     window.editPost = async function(postId, currentContent) {
-        const newContent = prompt('Edit your post:', currentContent);
+        const newContent = prompt('Edit your doubt:', currentContent);
         if (newContent !== null && newContent.trim() !== '') {
             try {
                 const postRef = doc(db, 'posts', postId);
@@ -196,7 +195,7 @@ if (window.location.pathname.includes('index.html')) {
     };
 
     window.deletePost = async function(postId) {
-        if (confirm('Are you sure you want to delete this post?')) {
+        if (confirm('Are you sure you want to delete this doubt?')) {
             try {
                 await deleteDoc(doc(db, 'posts', postId));
                 displayPosts();
@@ -300,53 +299,6 @@ if (window.location.pathname.includes('index.html')) {
         }
     };
 
-    function sharePost(postId) {
-        const postUrl = `${window.location.origin}/posts/${postId}`;
-        if (navigator.share) {
-            navigator.share({
-                title: 'Check out this post!',
-                url: postUrl
-            }).catch(err => {
-                console.error('Error sharing post: ', err);
-            });
-        } else {
-            // Fallback for browsers that don't support the Web Share API
-            navigator.clipboard.writeText(postUrl).then(() => {
-                alert('Post URL copied to clipboard!');
-            }).catch(err => {
-                console.error('Error copying URL: ', err);
-            });
-        }
-    }
-
+    // Initial display of posts
     displayPosts();
-}
-
-// Settings page logic
-if (window.location.pathname.includes('settings.html')) {
-    const themeSelect = document.getElementById('theme-select');
-    const fontSizeSelect = document.getElementById('font-size');
-
-    themeSelect.addEventListener('change', () => {
-        const theme = themeSelect.value;
-        document.body.className = theme;
-        localStorage.setItem('theme', theme);
-    });
-
-    fontSizeSelect.addEventListener('change', () => {
-        const fontSize = fontSizeSelect.value;
-        document.body.style.fontSize = fontSize === 'small' ? '14px' :
-            fontSize === 'medium' ? '16px' : '18px';
-        localStorage.setItem('fontSize', fontSize);
-    });
-
-    window.addEventListener('load', () => {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        const savedFontSize = localStorage.getItem('fontSize') || 'medium';
-        document.body.className = savedTheme;
-        themeSelect.value = savedTheme;
-        document.body.style.fontSize = savedFontSize === 'small' ? '14px' :
-            savedFontSize === 'medium' ? '16px' : '18px';
-        fontSizeSelect.value = savedFontSize;
-    });
 }
