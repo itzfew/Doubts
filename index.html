@@ -3,45 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edu Hub</title>
+    <title>Community Forum</title>
     <link rel="stylesheet" href="styles.css">
-    <script type="module" src="scripts.js" defer></script>
 </head>
 <body>
-    <!-- Profile Section -->
     <header>
-        <img id="profile-pic" src="default-profile.png" alt="Profile Picture" onclick="showProfilePopup()">
-        <span id="profile-name">Guest</span>
-        <button id="sign-out">Sign Out</button>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="profile.html">Profile</a>
+            <a href="settings.html">Settings</a>
+            <button id="sign-out">Sign Out</button>
+        </nav>
     </header>
-    
-    <!-- Profile Popup -->
-    <div id="profile-popup" class="popup">
-        <div class="popup-content">
-            <span id="close-profile-popup" class="close-btn">&times;</span>
-            <img id="profile-popup-pic" src="default-profile.png" alt="Profile Picture">
-            <h2 id="profile-username">Username</h2>
-            <button id="profile-signout">Sign Out</button>
-        </div>
-    </div>
-
-    <!-- Main Content -->
     <main>
-        <div id="post-form">
+        <section id="post-section">
+            <h2>Create Post</h2>
+            <input type="text" id="display-name" placeholder="Display Name">
             <textarea id="post-content" placeholder="What's on your mind?"></textarea>
-            <input type="text" id="display-name" placeholder="Your name">
-            <button id="submit-post">Post</button>
-        </div>
-        <div id="post-list"></div>
+            <button id="submit-post">Submit Post</button>
+        </section>
+        <section id="post-list">
+            <!-- Posts will be dynamically loaded here -->
+        </section>
     </main>
 
-    <!-- Reply Popup -->
-    <div id="reply-popup" class="popup">
-        <div class="popup-content">
-            <span id="close-popup" class="close-btn">&times;</span>
-            <textarea id="reply-content" placeholder="Write a reply..."></textarea>
-            <button id="submit-reply">Reply</button>
+    <!-- Login/Signup Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Log In / Sign Up</h2>
+            <div id="auth-form">
+                <input type="email" id="modal-email" placeholder="Email">
+                <input type="password" id="modal-password" placeholder="Password">
+                <button id="modal-sign-in">Log In</button>
+                <button id="modal-sign-up">Sign Up</button>
+            </div>
         </div>
     </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js"></script>
+    <script src="scripts.js"></script>
 </body>
 </html>
