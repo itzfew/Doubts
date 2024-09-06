@@ -3,7 +3,6 @@ import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimest
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
 
-// Initialize Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyAJVzWcSVu7nW-069bext5W6Nizx4sfxIA",
     authDomain: "edu-hub-c81b5.firebaseapp.com",
@@ -14,82 +13,62 @@ const firebaseConfig = {
     appId: "1:560742513136:web:102edd272982704fdb8535",
     measurementId: "G-78TC8XTPF7"
 };
+
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const analytics = getAnalytics(app);
 
-// Modal handling
-const modal = document.getElementById('auth-modal');
-const closeModal = document.querySelector('.modal .close');
-const modalSignInButton = document.getElementById('modal-sign-in');
-const modalSignUpButton = document.getElementById('modal-sign-up');
-const modalEmailInput = document.getElementById('modal-email');
-const modalPasswordInput = document.getElementById('modal-password');
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('auth-modal');
+    const closeModal = document.querySelector('.modal .close');
+    const signOutBtn = document.getElementById('sign-out');
+    const submitPostBtn = document.getElementById('submit-post');
 
-// Show modal
-function showModal() {
-    modal.style.display = 'block';
-}
+    closeModal.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
 
-// Hide modal
-function hideModal() {
-    modal.style.display = 'none';
-}
-
-closeModal.onclick = hideModal;
-
-// Sign in
-modalSignInButton.addEventListener('click', async () => {
-    const email = modalEmailInput.value;
-    const password = modalPasswordInput.value;
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        hideModal();
-        displayPosts();
-    } catch (error) {
-        console.error('Error signing in: ', error);
+    async function checkAuth() {
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('sign-out').style.display = 'block';
+                displayPosts();
+            } else {
+                document.getElementById('sign-out').style.display = 'none';
+                modal.style.display = 'block';
+            }
+        });
     }
-});
 
-// Sign up
-modalSignUpButton.addEventListener('click', async () => {
-    const email = modalEmailInput.value;
-    const password = modalPasswordInput.value;
-    try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        hideModal();
-        displayPosts();
-    } catch (error) {
-        console.error('Error signing up: ', error);
-    }
-});
-
-// Main index page logic
-if (window.location.pathname.includes('index.html')) {
-    const postForm = document.getElementById('post-section');
-    const signOutButton = document.getElementById('sign-out');
-
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            postForm.style.display = 'block';
-            signOutButton.style.display = 'inline';
-        } else {
-            postForm.style.display = 'none';
-            signOutButton.style.display = 'none';
+    document.getElementById('modal-sign-in').addEventListener('click', async () => {
+        const email = document.getElementById('modal-email').value;
+        const password = document.getElementById('modal-password').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            modal.style.display = 'none';
+        } catch (error) {
+            console.error('Error signing in: ', error);
         }
     });
 
-    document.getElementById('submit-post').addEventListener('click', async () => {
-        if (!auth.currentUser) {
-            showModal();
-            return;
+    document.getElementById('modal-sign-up').addEventListener('click', async () => {
+        const email = document.getElementById('modal-email').value;
+        const password = document.getElementById('modal-password').value;
+        try {
+            await createUserWithEmailAndPassword(auth, email, password);
+            modal.style.display = 'none';
+        } catch (error) {
+            console.error('Error signing up: ', error);
         }
+    });
 
+    submitPostBtn.addEventListener('click', async () => {
         const postContent = document.getElementById('post-content').value;
         const displayName = document.getElementById('display-name').value;
-        if (postContent.trim() === '' || displayName.trim() === '') {
-            alert('Post content and display name cannot be empty.');
+
+        if (postContent.trim() === '') {
+            alert('Post content cannot be empty.');
             return;
         }
 
@@ -109,7 +88,7 @@ if (window.location.pathname.includes('index.html')) {
         }
     });
 
-    document.getElementById('sign-out').addEventListener('click', async () => {
+    signOutBtn.addEventListener('click', async () => {
         try {
             await signOut(auth);
             window.location.href = 'profile.html';
@@ -145,8 +124,8 @@ if (window.location.pathname.includes('index.html')) {
                 
                 postDiv.innerHTML = `
                     <div class="author">
-                        <img src="user-profile-icon-free-vector.jpg" alt="Profile Picture" class="profile-pic" />
-                        ${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}
+                        <img src="https://exam-one-ashen.vercel.app/defult.jpg" alt="Profile Picture" class="profile-pic" />
+                        <span class="author-name">${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}</span>
                     </div>
                     <div class="content">${post.content}</div>
                     <div class="date">Published on: ${formattedDate}</div>
@@ -278,26 +257,23 @@ if (window.location.pathname.includes('index.html')) {
                         `;
                         repliesList.appendChild(replyDiv);
                     });
-                    showMoreButton.style.display = 'none';
+                    showMoreButton.remove();
                 };
                 repliesList.appendChild(showMoreButton);
             }
-
-            repliesList.style.display = 'block';
         } catch (error) {
             console.error('Error getting replies: ', error);
         }
     }
 
-    window.toggleReplies = function(postId) {
-        const repliesList = document.getElementById(`replies-${postId}`);
-        const isVisible = repliesList.style.display === 'block';
-        repliesList.style.display = isVisible ? 'none' : 'block';
+    function showModal() {
+        document.getElementById('auth-modal').style.display = 'block';
+    }
 
-        if (!isVisible) {
-            displayReplies(postId);
-        }
-    };
+    function toggleReplies(postId) {
+        const repliesSection = document.getElementById(`replies-${postId}`);
+        repliesSection.style.display = repliesSection.style.display === 'none' ? 'block' : 'none';
+    }
 
-    displayPosts();
-}
+    checkAuth();
+});
