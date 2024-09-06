@@ -33,6 +33,10 @@ header nav button {
     cursor: pointer;
 }
 
+header nav button:hover {
+    background: #777;
+}
+
 main {
     padding: 20px;
 }
@@ -55,6 +59,7 @@ button {
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 5px;
+    margin: 5px;
 }
 
 button:hover {
@@ -69,15 +74,16 @@ button:hover {
     margin-bottom: 20px;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
-.author {
+.post .author {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
 }
 
-.profile-pic {
+.post .profile-pic {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -85,25 +91,25 @@ button:hover {
     background-color: #eee;
 }
 
-.verified {
+.post .verified {
     color: #0f0;
 }
 
-.content {
+.post .content {
     margin-top: 10px;
 }
 
-.date {
+.post .date {
     margin-top: 10px;
     font-size: 0.8em;
     color: #888;
 }
 
-.actions {
+.post .actions {
     margin-top: 10px;
 }
 
-.actions button {
+.post .actions button {
     background: #555;
     border: none;
     color: #fff;
@@ -112,21 +118,28 @@ button:hover {
     border-radius: 5px;
 }
 
+.post .actions .toggle-replies-btn {
+    background: #007bff;
+}
+
+.post .actions .toggle-replies-btn:hover {
+    background: #0056b3;
+}
+
 /* Replies Styles */
 .replies {
     margin-top: 20px;
-}
-
-.replies-list {
-    margin-top: 10px;
     padding-left: 20px;
+    border-left: 3px solid #ddd;
+    background: #f9f9f9;
+    border-radius: 10px;
 }
 
 .reply {
     margin-bottom: 10px;
     padding: 10px;
-    background: #f9f9f9;
-    border-left: 3px solid #ddd;
+    background: #fff;
+    border-left: 3px solid #007bff;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -138,6 +151,14 @@ button:hover {
 .reply-date {
     font-size: 0.8em;
     color: #888;
+}
+
+.replies textarea {
+    margin-top: 10px;
+    width: calc(100% - 22px); /* Adjusted for padding and border */
+    box-sizing: border-box;
+    padding: 10px;
+    border-radius: 5px;
 }
 
 /* Modal Styles */
@@ -178,4 +199,13 @@ button:hover {
     color: #000;
     text-decoration: none;
     cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .post-form,
+    .post-list {
+        width: 100%;
+        padding: 10px;
+    }
 }
