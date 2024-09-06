@@ -3,318 +3,336 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post Sharing Website</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Profile</title>
     <style>
+        /* General Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #e9f5f9;
             color: #333;
         }
+
         header {
-            background-color: #007bff;
+            background: linear-gradient(to right, #4a90e2, #50e3c2);
             color: #fff;
-            padding: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header nav {
             display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
+            gap: 20px;
         }
-        #logo {
-            height: 40px;
-        }
-        nav a, nav button {
+
+        header nav a {
             color: #fff;
             text-decoration: none;
-            margin: 0 10px;
+            font-weight: bold;
+            transition: color 0.3s ease;
         }
-        nav button {
-            background: none;
+
+        header nav a:hover {
+            color: #ffeb3b;
+        }
+
+        header nav button {
+            background: #333;
             border: none;
+            color: #fff;
+            padding: 12px 24px;
             cursor: pointer;
+            border-radius: 25px;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
+        header nav button:hover {
+            background: #555;
+            transform: scale(1.05);
+        }
+
+        /* Main Content */
         main {
             padding: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
         }
-        #post-form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        #post-form input, #post-form textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
+
+        input, textarea, button {
+            display: block;
+            margin: 10px 0;
+            padding: 12px;
+            width: calc(100% - 24px);
+            box-sizing: border-box;
+            border-radius: 25px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-size: 16px;
         }
-        #post-form button {
-            background-color: #007bff;
-            color: #fff;
+
+        input:focus, textarea:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+            outline: none;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background: #4a90e2;
             border: none;
-            padding: 10px;
-            border-radius: 4px;
+            color: #fff;
             cursor: pointer;
+            border-radius: 25px;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        #posts {
+
+        button:hover {
+            background: #357abd;
+            transform: scale(1.05);
+        }
+
+        /* Profile Styles */
+        .profile-section {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .profile-section h2 {
+            margin-top: 0;
+        }
+
+        .profile-section img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-image: url('https://exam-one-ashen.vercel.app/defult.jpg');
+            background-size: cover;
+            background-position: center;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .profile-section .details {
+            text-align: center;
             margin-top: 20px;
         }
-        .post {
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
             background: #fff;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 10% auto;
+            padding: 25px;
+            border: 1px solid #ddd;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
-        .author {
+
+        .close {
+            color: #aaa; 
+            float: right;
+            font-size: 28px;
             font-weight: bold;
-        }
-        .verified {
-            color: #28a745;
-            margin-left: 5px;
-        }
-        .actions {
-            margin-top: 10px;
-        }
-        .actions button {
-            background: none;
-            border: none;
             cursor: pointer;
-            margin-right: 10px;
-            color: #007bff;
         }
-        .actions button:hover {
-            text-decoration: underline;
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            main {
+                padding: 10px;
+            }
+
+            .profile-section {
+                padding: 15px;
+            }
+
+            button {
+                width: auto;
+                max-width: none;
+            }
         }
     </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html">Home</a>
+            <button id="sign-out">Sign Out</button>
+        </nav>
+    </header>
+    <main>
+        <div id="auth-section" class="profile-section">
+            <h2 id="auth-title">Log In / Sign Up</h2>
+            <div id="auth-form">
+                <input type="email" id="modal-email" placeholder="Email">
+                <input type="password" id="modal-password" placeholder="Password">
+                <button id="modal-sign-in">Log In</button>
+                <button id="modal-sign-up">Sign Up</button>
+                <p><a href="#" id="forgot-password">Forgot Password?</a></p>
+            </div>
+        </div>
+        <div id="profile-section" class="profile-section" style="display: none;">
+            <h2>Profile</h2>
+            <img src="https://exam-one-ashen.vercel.app/defult.jpg" alt="Profile Picture">
+            <div class="details">
+                <p id="profile-name">Name: </p>
+                <p id="profile-email">Email: </p>
+                <p id="profile-uid">User ID: </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-forgot-password">&times;</span>
+            <h2>Forgot Password</h2>
+            <input type="email" id="forgot-email" placeholder="Enter your email">
+            <button id="send-reset-link">Send Reset Link</button>
+        </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDLKPOqok8VS3gR4TAEGCEH4IEJL8kKpvw",
-            authDomain: "ind-edu-f63b0.firebaseapp.com",
-            projectId: "ind-edu-f63b0",
-            storageBucket: "ind-edu-f63b0.appspot.com",
-            messagingSenderId: "405906160405",
-            appId: "1:405906160405:web:7040d4f0118fa01d13071c",
-            measurementId: "G-EPQM943Y2V"
+            apiKey: "AIzaSyAJVzWcSVu7nW-069bext5W6Nizx4sfxIA",
+            authDomain: "edu-hub-c81b5.firebaseapp.com",
+            projectId: "edu-hub-c81b5",
+            storageBucket: "edu-hub-c81b5.appspot.com",
+            messagingSenderId: "560742513136",
+            appId: "1:560742513136:web:102edd272982704fdb8535",
+            measurementId: "G-78TC8XTPF7"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Main index page logic
-        if (window.location.pathname.includes('index.html')) {
-            const postForm = document.getElementById('post-form');
-            const signOutButton = document.getElementById('sign-out');
+        document.addEventListener('DOMContentLoaded', () => {
+            const authSection = document.getElementById('auth-section');
+            const profileSection = document.getElementById('profile-section');
+            const modal = document.getElementById('forgot-password-modal');
+            const closeForgotPassword = document.getElementById('close-forgot-password');
+            const sendResetLinkBtn = document.getElementById('send-reset-link');
+            const forgotPasswordLink = document.getElementById('forgot-password');
 
-            onAuthStateChanged(auth, user => {
-                if (user) {
-                    postForm.style.display = 'block';
-                    signOutButton.style.display = 'inline';
-                } else {
-                    postForm.style.display = 'none';
-                    signOutButton.style.display = 'none';
+            function checkAuth() {
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        authSection.style.display = 'none';
+                        profileSection.style.display = 'block';
+                        document.getElementById('profile-name').textContent = `Name: ${user.displayName || 'N/A'}`;
+                        document.getElementById('profile-email').textContent = `Email: ${user.email}`;
+                        document.getElementById('profile-uid').textContent = `User ID: ${user.uid}`;
+                    } else {
+                        authSection.style.display = 'block';
+                        profileSection.style.display = 'none';
+                    }
+                });
+            }
+
+            checkAuth();
+
+            document.getElementById('modal-sign-in').addEventListener('click', async () => {
+                const email = document.getElementById('modal-email').value;
+                const password = document.getElementById('modal-password').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    alert('Error signing in: ' + error.message);
                 }
             });
 
-            document.getElementById('submit-post').addEventListener('click', async () => {
-                const postContent = document.getElementById('post-content').value;
-                const displayName = document.getElementById('display-name').value;
-                if (postContent.trim() === '' || displayName.trim() === '') {
-                    alert('Post content and display name cannot be empty.');
-                    return;
-                }
-
-                if (auth.currentUser) {
-                    try {
-                        await addDoc(collection(db, 'posts'), {
-                            content: postContent,
-                            timestamp: serverTimestamp(),
-                            uid: auth.currentUser.uid,
-                            displayName: displayName
-                        });
-                        document.getElementById('post-content').value = '';
-                        document.getElementById('display-name').value = '';
-                        displayPosts();
-                        alert('Post added successfully!');
-                    } catch (error) {
-                        console.error('Error adding post: ', error);
-                    }
-                } else {
-                    alert('You must be logged in to post.');
+            document.getElementById('modal-sign-up').addEventListener('click', async () => {
+                const email = document.getElementById('modal-email').value;
+                const password = document.getElementById('modal-password').value;
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    alert('Error signing up: ' + error.message);
                 }
             });
 
             document.getElementById('sign-out').addEventListener('click', async () => {
                 try {
                     await signOut(auth);
-                    window.location.href = 'profile.html';
                 } catch (error) {
-                    console.error('Error signing out: ', error);
+                    alert('Error signing out: ' + error.message);
                 }
             });
 
-            async function displayPosts() {
-                const postList = document.getElementById('post-list');
-                postList.innerHTML = '';
+            forgotPasswordLink.addEventListener('click', () => {
+                modal.style.display = 'flex';
+            });
 
-                try {
-                    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-                    const querySnapshot = await getDocs(q);
-                    querySnapshot.forEach(docSnap => {
-                        const post = docSnap.data();
-                        const postDiv = document.createElement('div');
-                        postDiv.classList.add('post');
+            closeForgotPassword.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
 
-                        // Format timestamp
-                        const timestamp = post.timestamp.toDate();
-                        const formattedDate = timestamp.toLocaleString('en-US', { 
-                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
-                            hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' 
+            sendResetLinkBtn.addEventListener('click', () => {
+                const email = document.getElementById('forgot-email').value;
+                if (email) {
+                    sendPasswordResetEmail(auth, email)
+                        .then(() => {
+                            alert('Password reset email sent!');
+                            modal.style.display = 'none';
+                        })
+                        .catch((error) => {
+                            alert('Error sending password reset email: ' + error.message);
                         });
-
-                        // Check if display name includes "verify"
-                        const isVerified = post.displayName.toLowerCase().includes('verify');
-                        // Remove "verify" from display name
-                        const cleanDisplayName = post.displayName.replace(/verify/i, '').trim();
-                        
-                        postDiv.innerHTML = `
-                            <div class="author">
-                                ${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}
-                            </div>
-                            <div class="content">${post.content}</div>
-                            <div class="date">Published on: ${formattedDate}</div>
-                            <div class="actions">
-                                ${auth.currentUser && auth.currentUser.uid === post.uid ? `
-                                    <button class="edit-btn" onclick="editPost('${docSnap.id}', '${post.content}')"><i class="fa fa-edit"></i> Edit</button>
-                                    <button class="delete-btn" onclick="deletePost('${docSnap.id}')"><i class="fa fa-trash"></i> Delete</button>
-                                ` : ''}
-                            </div>
-                        `;
-                        postList.appendChild(postDiv);
-                    });
-                } catch (error) {
-                    console.error('Error getting posts: ', error);
-                }
-            }
-
-            window.editPost = async function(postId, currentContent) {
-                const newContent = prompt('Edit your post:', currentContent);
-                if (newContent !== null && newContent.trim() !== '') {
-                    try {
-                        const postRef = doc(db, 'posts', postId);
-                        await updateDoc(postRef, {
-                            content: newContent
-                        });
-                        displayPosts();
-                    } catch (error) {
-                        console.error('Error updating post: ', error);
-                    }
-                }
-            };
-
-            window.deletePost = async function(postId) {
-                if (confirm('Are you sure you want to delete this post?')) {
-                    try {
-                        await deleteDoc(doc(db, 'posts', postId));
-                        displayPosts();
-                    } catch (error) {
-                        console.error('Error deleting post: ', error);
-                    }
-                }
-            };
-
-            displayPosts();
-        }
-
-        // Profile page logic
-        if (window.location.pathname.includes('profile.html')) {
-            const authSection = document.getElementById('auth-section');
-            const userInfo = document.getElementById('user-info');
-            const usernameDisplay = document.getElementById('username-display');
-            const signOutButton = document.getElementById('sign-out');
-            const viewPostsButton = document.getElementById('view-posts');
-
-            signOutButton.addEventListener('click', async () => {
-                try {
-                    await signOut(auth);
-                    window.location.href = 'index.html';
-                } catch (error) {
-                    console.error('Error signing out: ', error);
-                }
-            });
-
-            document.getElementById('sign-in').addEventListener('click', async () => {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    alert('Welcome back!');
-                    window.location.href = 'index.html';
-                } catch (error) {
-                    console.error('Error signing in: ', error);
-                }
-            });
-
-            document.getElementById('sign-up').addEventListener('click', async () => {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                try {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    alert('Welcome to Ind Edu!');
-                    window.location.href = 'profile.html';
-                } catch (error) {
-                    console.error('Error signing up: ', error);
-                }
-            });
-
-            onAuthStateChanged(auth, user => {
-                if (user) {
-                    authSection.style.display = 'none';
-                    userInfo.style.display = 'block';
-                    usernameDisplay.textContent = user.email.split('@')[0];
                 } else {
-                    authSection.style.display = 'block';
-                    userInfo.style.display = 'none';
+                    alert('Please enter your email.');
                 }
             });
-
-            viewPostsButton.addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-        }
+        });
     </script>
-</head>
-<body>
-    <header>
-        <img src="logo.png" alt="IND EDU Logo" id="logo">
-        <h1>Ind Edu</h1>
-        <nav>
-            <a href="profile.html" id="profile-link">Profile</a>
-            <button id="sign-out" style="display: none;">Sign Out</button>
-        </nav>
-    </header>
-    <main>
-        <section id="post-form" style="display: none;">
-            <h2>Share a Post</h2>
-            <input type="text" id="display-name" placeholder="Display Name" />
-            <textarea id="post-content" placeholder="Write your post here..."></textarea>
-            <button id="submit-post">Post</button>
-        </section>
-        <section id="posts">
-            <h2>Posts</h2>
-            <div id="post-list"></div>
-        </section>
-    </main>
 </body>
 </html>
