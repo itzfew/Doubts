@@ -130,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="content">${post.content}</div>
                     <div class="date">Published on: ${formattedDate}</div>
                     <div class="actions">
-                        <button class="share-btn" onclick="sharePost('${postId}')"><i class="fa fa-share"></i> Share</button>
                         ${auth.currentUser && auth.currentUser.uid === post.uid ? `
                             <button class="edit-btn" onclick="editPost('${postId}', '${post.content}')"><i class="fa fa-edit"></i> Edit</button>
                             <button class="delete-btn" onclick="deletePost('${postId}')"><i class="fa fa-trash"></i> Delete</button>
