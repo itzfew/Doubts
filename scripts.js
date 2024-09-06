@@ -167,8 +167,13 @@ if (window.location.pathname.includes('index.html')) {
                             <button class="delete-btn" onclick="deletePost('${doc.id}')"><i class="fa fa-trash"></i> Delete</button>
                         ` : ''}
                     </div>
+                    <!-- Replies Section -->
+                    <div id="replies-${doc.id}" class="replies"></div>
+                    <textarea id="reply-content-${doc.id}" placeholder="Write a reply..."></textarea>
+                    <button onclick="submitReply('${doc.id}')">Submit Reply</button>
                 `;
                 postList.appendChild(postDiv);
+                displayReplies(doc.id);
             });
         } catch (error) {
             console.error('Error getting posts: ', error);
@@ -197,6 +202,100 @@ if (window.location.pathname.includes('index.html')) {
                 displayPosts();
             } catch (error) {
                 console.error('Error deleting post: ', error);
+            }
+        }
+    };
+
+    async function displayReplies(postId) {
+        const repliesDiv = document.getElementById(`replies-${postId}`);
+        repliesDiv.innerHTML = '';
+
+        try {
+            const q = query(collection(db, `posts/${postId}/replies`), orderBy('timestamp', 'desc'));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(doc => {
+                const reply = doc.data();
+                const replyDiv = document.createElement('div');
+                replyDiv.classList.add('reply');
+
+                // Format timestamp
+                const timestamp = reply.timestamp.toDate();
+                const formattedDate = timestamp.toLocaleString('en-US', { 
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+                    hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' 
+                });
+
+                // Check if display name includes "verify"
+                const isVerified = reply.displayName.toLowerCase().includes('verify');
+                // Remove "verify" from display name
+                const cleanDisplayName = reply.displayName.replace(/verify/i, '').trim();
+                
+                replyDiv.innerHTML = `
+                    <div class="author">
+                        ${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}
+                    </div>
+                    <div class="content">${reply.content}</div>
+                    <div class="date">Published on: ${formattedDate}</div>
+                    ${auth.currentUser && auth.currentUser.uid === reply.uid ? `
+                        <button class="edit-btn" onclick="editReply('${doc.id}', '${reply.content}')"><i class="fa fa-edit"></i> Edit</button>
+                        <button class="delete-btn" onclick="deleteReply('${doc.id}')"><i class="fa fa-trash"></i> Delete</button>
+                    ` : ''}
+                `;
+                repliesDiv.appendChild(replyDiv);
+            });
+        } catch (error) {
+            console.error('Error getting replies: ', error);
+        }
+    }
+
+    window.submitReply = async function(postId) {
+        const replyContent = document.getElementById(`reply-content-${postId}`).value;
+        if (replyContent.trim() === '') {
+            alert('Reply content cannot be empty.');
+            return;
+        }
+
+        if (auth.currentUser) {
+            try {
+                await addDoc(collection(db, `posts/${postId}/replies`), {
+                    content: replyContent,
+                    timestamp: serverTimestamp(),
+                    uid: auth.currentUser.uid,
+                    displayName: auth.currentUser.email.split('@')[0]
+                });
+                document.getElementById(`reply-content-${postId}`).value = '';
+                displayReplies(postId);
+                alert('Reply added successfully!');
+            } catch (error) {
+                console.error('Error adding reply: ', error);
+            }
+        } else {
+            alert('You must be logged in to reply.');
+        }
+    };
+
+    window.editReply = async function(replyId, currentContent) {
+        const newContent = prompt('Edit your reply:', currentContent);
+        if (newContent !== null && newContent.trim() !== '') {
+            try {
+                const replyRef = doc(db, `posts/${postId}/replies`, replyId);
+                await updateDoc(replyRef, {
+                    content: newContent
+                });
+                displayReplies(postId);
+            } catch (error) {
+                console.error('Error updating reply: ', error);
+            }
+        }
+    };
+
+    window.deleteReply = async function(replyId) {
+        if (confirm('Are you sure you want to delete this reply?')) {
+            try {
+                await deleteDoc(doc(db, `posts/${postId}/replies`, replyId));
+                displayReplies(postId);
+            } catch (error) {
+                console.error('Error deleting reply: ', error);
             }
         }
     };
