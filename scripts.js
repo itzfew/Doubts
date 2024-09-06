@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = document.querySelector('.modal .close');
     const signOutBtn = document.getElementById('sign-out');
     const submitPostBtn = document.getElementById('submit-post');
+    const messageDiv = document.getElementById('message');
+    let actionAfterAuth = null; // Store the action to perform after authentication
 
     closeModal.addEventListener('click', () => {
         modal.style.display = 'none';
@@ -33,10 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
         onAuthStateChanged(auth, user => {
             if (user) {
                 document.getElementById('sign-out').style.display = 'block';
-                displayPosts();
+                displayPosts();  // Show posts to authenticated users
+                showMessage('Welcome back to Edu Hub Doubt Community!');
             } else {
                 document.getElementById('sign-out').style.display = 'none';
-                modal.style.display = 'block';
+                displayPosts();  // Show posts to unauthenticated users
+                showMessage('Please sign in to interact with posts.');
             }
         });
     }
@@ -47,8 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             modal.style.display = 'none';
+            showMessage('Welcome back to Edu Hub Doubt Community!');
+            if (actionAfterAuth) {
+                actionAfterAuth(); // Execute the action after authentication
+                actionAfterAuth = null; // Clear the action
+            }
         } catch (error) {
             console.error('Error signing in: ', error);
+            showMessage('Error signing in. Please try again.');
         }
     });
 
@@ -58,33 +68,47 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await createUserWithEmailAndPassword(auth, email, password);
             modal.style.display = 'none';
+            showMessage('Welcome to Edu Hub Doubt Community!');
+            if (actionAfterAuth) {
+                actionAfterAuth(); // Execute the action after authentication
+                actionAfterAuth = null; // Clear the action
+            }
         } catch (error) {
             console.error('Error signing up: ', error);
+            showMessage('Error signing up. Please try again.');
         }
     });
 
     submitPostBtn.addEventListener('click', async () => {
-        const postContent = document.getElementById('post-content').value;
-        const displayName = document.getElementById('display-name').value;
+        if (auth.currentUser) {
+            const postContent = document.getElementById('post-content').value;
+            const displayName = document.getElementById('display-name').value;
 
-        if (postContent.trim() === '') {
-            alert('Post content cannot be empty.');
-            return;
-        }
+            if (postContent.trim() === '') {
+                showMessage('Post content cannot be empty.');
+                return;
+            }
 
-        try {
-            await addDoc(collection(db, 'posts'), {
-                content: postContent,
-                timestamp: serverTimestamp(),
-                uid: auth.currentUser.uid,
-                displayName: displayName
-            });
-            document.getElementById('post-content').value = '';
-            document.getElementById('display-name').value = '';
-            displayPosts();
-            alert('Post added successfully!');
-        } catch (error) {
-            console.error('Error adding post: ', error);
+            try {
+                await addDoc(collection(db, 'posts'), {
+                    content: postContent,
+                    timestamp: serverTimestamp(),
+                    uid: auth.currentUser.uid,
+                    displayName: displayName || 'Anonymous'
+                });
+                document.getElementById('post-content').value = '';
+                document.getElementById('display-name').value = '';
+                displayPosts();
+                showMessage('Post added successfully!');
+            } catch (error) {
+                console.error('Error adding post: ', error);
+                showMessage('Error adding post. Please try again.');
+            }
+        } else {
+            actionAfterAuth = () => {
+                submitPostBtn.click(); // Trigger the original action after authentication
+            };
+            showModal();
         }
     });
 
@@ -94,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'profile.html';
         } catch (error) {
             console.error('Error signing out: ', error);
+            showMessage('Error signing out. Please try again.');
         }
     });
 
@@ -134,8 +159,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="edit-btn" onclick="editPost('${postId}', '${post.content}')"><i class="fa fa-edit"></i> Edit</button>
                             <button class="delete-btn" onclick="deletePost('${postId}')"><i class="fa fa-trash"></i> Delete</button>
                         ` : ''}
-                        <textarea id="reply-content-${postId}" placeholder="Write a reply..."></textarea>
-                        <button onclick="addReply('${postId}')"><i class="fa fa-paper-plane"></i> Add Reply</button>
+                        ${auth.currentUser ? `
+                            <textarea id="reply-content-${postId}" placeholder="Write a reply..."></textarea>
+                            <button onclick="addReply('${postId}')"><i class="fa fa-paper-plane"></i> Add Reply</button>
+                        ` : `
+                            <p>Please <a href="#" onclick="showModal()">sign in</a> to reply.</p>
+                        `}
                     </div>
                     <div id="replies-${postId}" class="replies">
                         <!-- Replies will be dynamically loaded here -->
@@ -146,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error('Error getting posts: ', error);
+            showMessage('Error retrieving posts. Please try again.');
         }
     }
 
@@ -158,8 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     content: newContent
                 });
                 displayPosts();
+                showMessage('Post updated successfully!');
             } catch (error) {
                 console.error('Error updating post: ', error);
+                showMessage('Error updating post. Please try again.');
             }
         }
     };
@@ -169,20 +201,22 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await deleteDoc(doc(db, 'posts', postId));
                 displayPosts();
+                showMessage('Post deleted successfully!');
             } catch (error) {
                 console.error('Error deleting post: ', error);
+                showMessage('Error deleting post. Please try again.');
             }
         }
     };
 
     window.addReply = async function(postId) {
-        const replyContent = document.getElementById(`reply-content-${postId}`).value;
-        if (replyContent.trim() === '') {
-            alert('Reply content cannot be empty.');
-            return;
-        }
-
         if (auth.currentUser) {
+            const replyContent = document.getElementById(`reply-content-${postId}`).value;
+            if (replyContent.trim() === '') {
+                showMessage('Reply content cannot be empty.');
+                return;
+            }
+
             try {
                 await addDoc(collection(db, `posts/${postId}/replies`), {
                     content: replyContent,
@@ -192,10 +226,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 document.getElementById(`reply-content-${postId}`).value = '';
                 displayReplies(postId);
+                showMessage('Reply added successfully!');
             } catch (error) {
                 console.error('Error adding reply: ', error);
+                showMessage('Error adding reply. Please try again.');
             }
         } else {
+            actionAfterAuth = () => {
+                document.getElementById(`reply-content-${postId}`).focus(); // Focus the reply input
+            };
             showModal();
         }
     };
@@ -261,11 +300,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error getting replies: ', error);
+            showMessage('Error retrieving replies. Please try again.');
         }
     }
 
     function showModal() {
         document.getElementById('auth-modal').style.display = 'block';
+    }
+
+    function showMessage(message) {
+        messageDiv.textContent = message;
+        messageDiv.style.display = 'block';
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 5000); // Hide message after 5 seconds
     }
 
     checkAuth();
