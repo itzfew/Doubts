@@ -145,7 +145,7 @@ if (window.location.pathname.includes('index.html')) {
                 
                 postDiv.innerHTML = `
                     <div class="author">
-                        <img src="default-profile-pic.jpg" alt="Profile Picture" class="profile-pic" />
+                        <img src="user-profile-icon-free-vector.jpg" alt="Profile Picture" class="profile-pic" />
                         ${cleanDisplayName} ${isVerified ? '<i class="fa fa-check-circle verified"></i> Verified' : ''}
                     </div>
                     <div class="content">${post.content}</div>
