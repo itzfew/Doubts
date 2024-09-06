@@ -269,8 +269,13 @@
                     if (user) {
                         authSection.style.display = 'none';
                         profileSection.style.display = 'block';
-                        document.getElementById('profile-name').textContent = `Name: ${user.displayName || 'N/A'}`;
-                        document.getElementById('profile-email').textContent = `Email: ${user.email}`;
+
+                        // Extract and display the email without @gmail.com
+                        const email = user.email;
+                        const username = email ? email.split('@')[0] : 'N/A';
+                        
+                        document.getElementById('profile-name').textContent = `Name: ${username}`;
+                        document.getElementById('profile-email').textContent = `Email: ${email}`;
                         document.getElementById('profile-uid').textContent = `User ID: ${user.uid}`;
                     } else {
                         authSection.style.display = 'block';
