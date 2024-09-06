@@ -134,9 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="edit-btn" onclick="editPost('${postId}', '${post.content}')"><i class="fa fa-edit"></i> Edit</button>
                             <button class="delete-btn" onclick="deletePost('${postId}')"><i class="fa fa-trash"></i> Delete</button>
                         ` : ''}
-                        <button class="toggle-replies-btn" onclick="toggleReplies('${postId}')"><i class="fa fa-comment"></i> Replies</button>
                         <textarea id="reply-content-${postId}" placeholder="Write a reply..."></textarea>
-                        <button onclick="addReply('${postId}')">Add Reply</button>
+                        <button onclick="addReply('${postId}')"><i class="fa fa-paper-plane"></i> Add Reply</button>
                     </div>
                     <div id="replies-${postId}" class="replies">
                         <!-- Replies will be dynamically loaded here -->
@@ -267,11 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showModal() {
         document.getElementById('auth-modal').style.display = 'block';
-    }
-
-    function toggleReplies(postId) {
-        const repliesSection = document.getElementById(`replies-${postId}`);
-        repliesSection.style.display = repliesSection.style.display === 'none' ? 'block' : 'none';
     }
 
     checkAuth();
