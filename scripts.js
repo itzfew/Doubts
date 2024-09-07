@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="reply-date">Replied on: ${formattedDate}</div>
                         `;
                         repliesList.appendChild(replyDiv);
-                    });
+                     });
                     showMoreButton.remove();
                 };
                 repliesList.appendChild(showMoreButton);
